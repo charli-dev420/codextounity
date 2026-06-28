@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Codex Asset Profile",
+  "type": "object",
+  "required": ["schema", "profileId", "displayName", "profileType", "aliases", "promptRules", "negativePromptRules", "targetBounds", "faceBudget", "textureSize", "pivotMode", "unityCategory", "generationDefaults", "importDefaults", "validationRules"],
+  "properties": {
+    "schema": { "const": "codex.assetProfile.v1" },
+    "profileId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "displayName": { "type": "string", "minLength": 1 },
+    "profileType": { "type": "string", "minLength": 1 },
+    "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+    "promptRules": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 3 },
+    "negativePromptRules": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 2 },
+    "targetBounds": {
+      "type": "object",
+      "required": ["x", "y", "z"],
+      "properties": { "x": { "type": "number", "exclusiveMinimum": 0 }, "y": { "type": "number", "exclusiveMinimum": 0 }, "z": { "type": "number", "exclusiveMinimum": 0 } }
+    },
+    "faceBudget": { "type": "integer", "minimum": 100, "maximum": 100000 },
+    "textureSize": { "type": "integer", "enum": [256, 512, 1024, 2048] },
+    "pivotMode": { "type": "string", "enum": ["bottom-center", "center", "origin", "custom", "keep"] },
+    "unityCategory": { "type": "string", "minLength": 1 },
+    "generationDefaults": { "type": "object", "required": ["workflow", "seed", "maxViews"] },
+    "importDefaults": { "type": "object", "required": ["unitySubdir", "prefabNaming"] },
+    "validationRules": { "type": "object", "required": ["singleObject", "maxTriangleCount", "maxTextureSize", "allowedFormats", "boundsTolerance"] }
+  }
+}

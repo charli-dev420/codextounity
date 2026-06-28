@@ -1,0 +1,25 @@
+{
+  "name": "default",
+  "description": "Generic local ComfyUI/TRELLIS2 asset generation profile.",
+  "comfyui": {
+    "server": "http://127.0.0.1:8188",
+    "officialWorkflow": "simple",
+    "prefix": "trellis2_assets",
+    "fileFormat": "glb",
+    "seed": 2146628683,
+    "targetFaces": 18000,
+    "highPolyFaces": 120000,
+    "textureSize": 1024,
+    "sparseStructureSteps": 18,
+    "shapeSteps": 18,
+    "textureSteps": 18,
+    "maxViews": 4,
+    "sampler": "euler",
+    "groupSize": 10
+  },
+  "postprocess": {
+    "select": "all",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady",
+    "validationProfile": "CodexPostGeneration"
+  }
+}

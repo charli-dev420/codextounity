@@ -1,0 +1,53 @@
+name: Bug report
+description: Report a reproducible problem
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is a solo-maintained prototype. Please remove secrets, local personal paths and private project names before submitting.
+        Prototype maintenu par un seul developpeur. Retirez les secrets, chemins personnels et noms de projets prives avant d'envoyer l'issue.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: List exact commands and actions.
+      placeholder: |
+        1. Run ...
+        2. Click ...
+        3. See ...
+    validations:
+      required: true
+  - type: input
+    id: target
+    attributes:
+      label: Target/profile
+      placeholder: "windows + blackwell, wsl + cpu, docker + auto..."
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, GPU, driver, Python, Node, Docker, Unity and ComfyUI versions when relevant.
+  - type: textarea
+    id: logs
+    attributes:
+      label: Redacted logs
+      description: Paste only redacted logs. Do not include tokens or personal paths.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I removed secrets, tokens and personal paths.
+          required: true
+        - label: I understand this is a prototype with no stability guarantee.
+          required: true

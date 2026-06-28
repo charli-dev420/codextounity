@@ -1,0 +1,128 @@
+{
+  "6": {
+    "inputs": {
+      "image": "mur_noir_15_meurtriere_1m.png"
+    },
+    "class_type": "Trellis2LoadImageWithTransparency",
+    "_meta": {
+      "title": "Trellis2 - Load Image with Transparency"
+    }
+  },
+  "10": {
+    "inputs": {
+      "model_file": [
+        "19",
+        0
+      ],
+      "image": ""
+    },
+    "class_type": "Preview3D",
+    "_meta": {
+      "title": "Aperçu 3D"
+    }
+  },
+  "19": {
+    "inputs": {
+      "filename_prefix": "mur_noir_15_meurtriere_1m",
+      "file_format": "glb",
+      "trimesh": [
+        "43",
+        0
+      ]
+    },
+    "class_type": "Trellis2ExportMesh",
+    "_meta": {
+      "title": "Trellis2 - Export Mesh"
+    }
+  },
+  "39": {
+    "inputs": {
+      "modelname": "microsoft/TRELLIS.2-4B",
+      "backend": "flash_attn",
+      "device": "cuda",
+      "low_vram": true,
+      "keep_models_loaded": false
+    },
+    "class_type": "Trellis2LoadModel",
+    "_meta": {
+      "title": "Trellis2 - LoadModel"
+    }
+  },
+  "41": {
+    "inputs": {
+      "seed": 2146628683,
+      "pipeline_type": "1024",
+      "sparse_structure_steps": 18,
+      "shape_steps": 18,
+      "texture_steps": 18,
+      "max_num_tokens": 999999,
+      "max_views": 4,
+      "sparse_structure_resolution": 32,
+      "generate_texture_slat": true,
+      "use_tiled_decoder": true,
+      "sampler": "euler",
+      "pipeline": [
+        "39",
+        0
+      ],
+      "image": [
+        "44",
+        0
+      ]
+    },
+    "class_type": "Trellis2MeshWithVoxelGenerator",
+    "_meta": {
+      "title": "Trellis2 - Mesh With Voxel Generator"
+    }
+  },
+  "43": {
+    "inputs": {
+      "mesh_cluster_threshold_cone_half_angle_rad": 60,
+      "mesh_cluster_refine_iterations": 0,
+      "mesh_cluster_global_iterations": 1,
+      "mesh_cluster_smooth_strength": 1,
+      "texture_size": 1024,
+      "remesh": true,
+      "remesh_band": 1,
+      "remesh_project": 0,
+      "target_face_num": 18000,
+      "simplify_method": "Cumesh",
+      "fill_holes": true,
+      "texture_alpha_mode": "OPAQUE",
+      "dual_contouring_resolution": "1024",
+      "double_side_material": false,
+      "remove_floaters": true,
+      "bake_on_vertices": false,
+      "use_custom_normals": false,
+      "remove_inner_faces": true,
+      "inpainting": "telea",
+      "mesh": [
+        "41",
+        0
+      ],
+      "bvh": [
+        "41",
+        1
+      ]
+    },
+    "class_type": "Trellis2PostProcessAndUnWrapAndRasterizer",
+    "_meta": {
+      "title": "Trellis2 - Post Process/UnWrap and Rasterize"
+    }
+  },
+  "44": {
+    "inputs": {
+      "padding": 0,
+      "remove_background": true,
+      "max_size": 2048,
+      "image": [
+        "6",
+        2
+      ]
+    },
+    "class_type": "Trellis2PreProcessImage",
+    "_meta": {
+      "title": "Trellis2 - PreProcess Image"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "profileId": "equipment",
+  "generationDefaults": {
+    "workflow": "simple",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 18,
+    "seed": 2146628683,
+    "textureSteps": 18,
+    "sparseStructureSteps": 18
+  },
+  "pivotMode": "center",
+  "displayName": "Equipment",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "maxTriangleCount": 9000,
+    "boundsTolerance": 0.003,
+    "requiresAttachmentSlot": true,
+    "maxTextureSize": 1024,
+    "allowedFormats": [
+      "glb"
+    ],
+    "singleObject": true
+  },
+  "profileType": "equipment",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "socketSlot": "custom",
+    "collider": "mesh",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Equipment"
+  },
+  "promptRules": [
+    "single wearable equipment asset",
+    "plain uniform background",
+    "no mannequin unless requested",
+    "no text",
+    "clear attachment orientation",
+    "entire object visible"
+  ],
+  "negativePromptRules": [
+    "full character unless requested",
+    "multiple equipment pieces",
+    "inventory UI",
+    "labels",
+    "floor shadow"
+  ],
+  "targetBounds": {
+    "x": 0.8,
+    "y": 0.8,
+    "z": 0.4
+  },
+  "faceBudget": 9000,
+  "aliases": [
+    "equipment",
+    "equipement",
+    "armor",
+    "helmet",
+    "boots",
+    "gloves",
+    "belt",
+    "backpack",
+    "pauldron",
+    "wearable"
+  ],
+  "textureSize": 1024,
+  "unityCategory": "equipment"
+}

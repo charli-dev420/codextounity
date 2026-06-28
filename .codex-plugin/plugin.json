@@ -1,0 +1,35 @@
+{
+  "name": "codex-unity-comfyui-pipeline",
+  "version": "0.2.0",
+  "description": "Prototype Codex-orchestrated Unity asset pipeline for local ComfyUI/TRELLIS2 generation and post-processing.",
+  "author": {
+    "name": "Solo maintainer"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "unity",
+    "comfyui",
+    "trellis",
+    "3d-assets",
+    "codex"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Codex Unity ComfyUI Pipeline",
+    "shortDescription": "Prototype local ComfyUI asset generation with Codex-owned post-processing.",
+    "longDescription": "Codex Unity ComfyUI Pipeline is a solo-maintained prototype. It helps Codex orchestrate local ComfyUI/TRELLIS2 image-to-3D jobs, inspect generated meshes, write Unity import manifests, and install a thin Unity Editor template. Codex remains the user-directed decision layer; ComfyUI is only the local generation engine. No stability, support or installer reliability guarantee is provided at this stage.",
+    "developerName": "Solo maintainer",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "Run a local ComfyUI batch and post-process it for Unity.",
+      "Install the Unity asset pipeline template in this project.",
+      "Inspect generated meshes and write Unity import manifests."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

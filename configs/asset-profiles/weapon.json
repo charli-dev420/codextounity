@@ -1,0 +1,69 @@
+{
+  "profileId": "weapon",
+  "generationDefaults": {
+    "workflow": "simple",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 18,
+    "seed": 2146628683,
+    "textureSteps": 18,
+    "sparseStructureSteps": 18
+  },
+  "pivotMode": "center",
+  "displayName": "Weapon",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "maxTriangleCount": 8000,
+    "boundsTolerance": 0.003,
+    "requiresAttachmentSlot": true,
+    "maxTextureSize": 1024,
+    "allowedFormats": [
+      "glb"
+    ],
+    "singleObject": true
+  },
+  "profileType": "equipment",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "socketSlot": "main_hand",
+    "collider": "mesh",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Equipment/Weapons"
+  },
+  "promptRules": [
+    "single weapon asset",
+    "clear silhouette",
+    "plain uniform background",
+    "no hands",
+    "no character",
+    "no text",
+    "orientation suitable for socket placement"
+  ],
+  "negativePromptRules": [
+    "hands holding weapon",
+    "weapon rack",
+    "multiple weapons",
+    "motion blur",
+    "labels",
+    "floor plane"
+  ],
+  "targetBounds": {
+    "x": 1.0,
+    "y": 0.25,
+    "z": 0.18
+  },
+  "faceBudget": 8000,
+  "aliases": [
+    "weapon",
+    "arme",
+    "sword",
+    "axe",
+    "bow",
+    "staff",
+    "dagger",
+    "mace",
+    "shield",
+    "gun"
+  ],
+  "textureSize": 1024,
+  "unityCategory": "equipment/weapons"
+}

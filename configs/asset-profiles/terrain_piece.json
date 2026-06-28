@@ -1,0 +1,66 @@
+{
+  "profileId": "terrain_piece",
+  "generationDefaults": {
+    "workflow": "simple",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 18,
+    "seed": 2146628683,
+    "textureSteps": 18,
+    "sparseStructureSteps": 18
+  },
+  "pivotMode": "bottom-center",
+  "displayName": "Terrain Piece",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "requireFlatBase": true,
+    "maxTriangleCount": 14000,
+    "boundsTolerance": 0.003,
+    "maxTextureSize": 1024,
+    "allowedFormats": [
+      "glb"
+    ],
+    "singleObject": true
+  },
+  "profileType": "environment",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "collider": "mesh",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Environment/Terrain"
+  },
+  "promptRules": [
+    "single modular terrain piece",
+    "plain uniform background",
+    "flat base",
+    "tileable edges if requested",
+    "no text",
+    "top surface readable",
+    "entire piece visible"
+  ],
+  "negativePromptRules": [
+    "large landscape scene",
+    "sky background",
+    "multiple tiles",
+    "labels",
+    "heavy overhangs unless requested"
+  ],
+  "targetBounds": {
+    "x": 4.0,
+    "y": 0.4,
+    "z": 4.0
+  },
+  "faceBudget": 14000,
+  "aliases": [
+    "terrain",
+    "terrain_piece",
+    "ground",
+    "floor",
+    "tile",
+    "plateau",
+    "rock",
+    "path",
+    "modular terrain"
+  ],
+  "textureSize": 1024,
+  "unityCategory": "environment/terrain"
+}

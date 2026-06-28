@@ -1,0 +1,90 @@
+ARG BASE_IMAGE=nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04
+ARG PYTORCH_INDEX_URL=https://download.pytorch.org/whl/cu128
+ARG COMFYUI_REPO=https://github.com/comfyanonymous/ComfyUI
+ARG COMFYUI_TRELLIS2_REPO=https://github.com/visualbruno/ComfyUI-Trellis2
+ARG INCLUDE_TRELLIS2_MODELS=true
+ARG TRELLIS2_MODEL_REPO=microsoft/TRELLIS.2-4B
+ARG BUILD_JOBS=1
+
+FROM ${BASE_IMAGE} AS apt-base
+ARG BUILD_JOBS
+ENV DEBIAN_FRONTEND=noninteractive
+ENV ASSET_FACTORY_ROOT=/opt/asset-factory
+ENV COMFYUI_ROOT=/opt/asset-factory/ComfyUI
+ENV VIRTUAL_ENV=/opt/asset-factory/venv
+ENV PATH=/opt/asset-factory/venv/bin:$PATH
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
+ENV PIP_NO_CACHE_DIR=1
+ENV PYTHONUNBUFFERED=1
+ENV MAX_JOBS=${BUILD_JOBS}
+ENV CMAKE_BUILD_PARALLEL_LEVEL=${BUILD_JOBS}
+ENV MAKEFLAGS=-j${BUILD_JOBS}
+ENV NINJAFLAGS=-j${BUILD_JOBS}
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    bash \
+    ca-certificates \
+    curl \
+    ffmpeg \
+    git \
+    git-lfs \
+    libgl1 \
+    libglib2.0-0 \
+    libgomp1 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    python3 \
+    python3-dev \
+    python3-pip \
+    python3-venv \
+    build-essential \
+    cmake \
+    ninja-build \
+    nodejs \
+    npm \
+    pkg-config \
+    wget \
+  && rm -rf /var/lib/apt/lists/*
+
+FROM apt-base AS venv-base
+RUN mkdir -p ${ASSET_FACTORY_ROOT}/models ${ASSET_FACTORY_ROOT}/work \
+  && python3 -m venv ${VIRTUAL_ENV} \
+  && ${VIRTUAL_ENV}/bin/python -m pip install --upgrade pip setuptools wheel packaging ninja cmake
+
+FROM venv-base AS torch-runtime
+ARG PYTORCH_INDEX_URL
+RUN ${VIRTUAL_ENV}/bin/python -m pip install torch torchvision --index-url ${PYTORCH_INDEX_URL}
+
+FROM torch-runtime AS attention-runtime
+RUN ${VIRTUAL_ENV}/bin/python -m pip install xformers
+RUN ${VIRTUAL_ENV}/bin/python -m pip install flash-attn --no-build-isolation
+
+FROM attention-runtime AS comfyui-runtime
+ARG COMFYUI_REPO
+RUN git clone --depth 1 ${COMFYUI_REPO} ${COMFYUI_ROOT} \
+  && ${VIRTUAL_ENV}/bin/python -m pip install -r ${COMFYUI_ROOT}/requirements.txt
+
+FROM comfyui-runtime AS trellis2-runtime
+ARG COMFYUI_TRELLIS2_REPO
+RUN git clone --depth 1 ${COMFYUI_TRELLIS2_REPO} ${COMFYUI_ROOT}/custom_nodes/ComfyUI-Trellis2 \
+  && if [ -f "${COMFYUI_ROOT}/custom_nodes/ComfyUI-Trellis2/requirements.txt" ]; then \
+       ${VIRTUAL_ENV}/bin/python -m pip install -r ${COMFYUI_ROOT}/custom_nodes/ComfyUI-Trellis2/requirements.txt; \
+     fi
+
+FROM trellis2-runtime AS models-runtime
+ARG INCLUDE_TRELLIS2_MODELS
+ARG TRELLIS2_MODEL_REPO
+RUN ${VIRTUAL_ENV}/bin/python -m pip install huggingface_hub safetensors
+RUN if [ "${INCLUDE_TRELLIS2_MODELS}" = "true" ]; then \
+      ${VIRTUAL_ENV}/bin/python -c "from huggingface_hub import snapshot_download; snapshot_download(repo_id='${TRELLIS2_MODEL_REPO}', local_dir='${ASSET_FACTORY_ROOT}/models/TRELLIS.2-4B')"; \
+    else \
+      mkdir -p ${ASSET_FACTORY_ROOT}/models/TRELLIS.2-4B && echo "TRELLIS2 models are mounted or downloaded outside the image." > ${ASSET_FACTORY_ROOT}/models/TRELLIS.2-4B/README.txt; \
+    fi
+
+FROM models-runtime AS final
+COPY docker/runtime/validate_runtime.sh /usr/local/bin/asset-factory-validate-runtime
+RUN chmod +x /usr/local/bin/asset-factory-validate-runtime
+WORKDIR ${COMFYUI_ROOT}
+EXPOSE 8188
+CMD ["asset-factory-validate-runtime"]

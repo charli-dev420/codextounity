@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Asset Factory Installer</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f2f4f7;
+      --surface: #ffffff;
+      --surface-2: #f8fafc;
+      --text: #111827;
+      --muted: #5b6573;
+      --line: #d8dde5;
+      --accent: #1f66d1;
+      --accent-soft: #e8f0ff;
+      --ok: #137b55;
+      --warn: #9a6400;
+      --bad: #b42828;
+      --code: #101419;
+      --radius: 8px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); }
+    main { max-width: 1180px; margin: 0 auto; padding: 22px; display: grid; gap: 14px; }
+    header { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    h1 { margin: 0; font-size: 24px; line-height: 1.1; letter-spacing: 0; }
+    h2 { margin: 0; font-size: 16px; line-height: 1.25; letter-spacing: 0; }
+    h3 { margin: 0; font-size: 14px; letter-spacing: 0; }
+    p { margin: 4px 0 0; color: var(--muted); line-height: 1.45; }
+    a { color: var(--accent); }
+    .state { min-width: 140px; text-align: right; font-weight: 800; color: var(--muted); }
+    .progress { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    .stage { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 8px; align-items: center; min-height: 58px; }
+    .stage-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: #e8edf4; color: var(--muted); font-size: 12px; font-weight: 900; }
+    .stage.active { border-color: var(--accent); background: var(--accent-soft); }
+    .stage.active .stage-number { background: var(--accent); color: #fff; }
+    .stage strong { display: block; font-size: 13px; }
+    .stage span { color: var(--muted); font-size: 12px; }
+    .layout { display: grid; grid-template-columns: 360px minmax(0, 1fr); gap: 14px; align-items: start; }
+    section { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; display: grid; gap: 12px; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    input, select, button { width: 100%; min-height: 38px; border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--text); padding: 8px 10px; font: inherit; letter-spacing: 0; }
+    button { cursor: pointer; font-weight: 800; }
+    button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    button.secondary { background: #eef2f7; }
+    button.ghost { background: #fff; }
+    button:disabled { opacity: .55; cursor: default; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .action-stack { display: grid; gap: 8px; }
+    .main-stack { display: grid; gap: 14px; }
+    .component-list { display: grid; border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; }
+    .component-row { display: grid; grid-template-columns: minmax(180px, .9fr) 126px minmax(0, 1.4fr); gap: 12px; align-items: start; padding: 11px 12px; background: #fff; border-bottom: 1px solid var(--line); }
+    .component-row:last-child { border-bottom: 0; }
+    .component-row.header { background: var(--surface-2); color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+    .component-name strong { display: block; font-size: 14px; }
+    .component-name span, .source { color: var(--muted); font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+    .badge { display: inline-flex; align-items: center; width: fit-content; border-radius: 999px; padding: 4px 8px; border: 1px solid var(--line); background: #f7f9fc; color: var(--muted); font-size: 12px; font-weight: 800; }
+    .badge.ok { color: var(--ok); border-color: #a9d8c4; background: #effaf5; }
+    .badge.warn { color: var(--warn); border-color: #e7c57d; background: #fff8e8; }
+    .badge.bad { color: var(--bad); border-color: #eeaaaa; background: #fff1f1; }
+    .manual-box { border: 1px solid #e7c57d; background: #fff8e8; border-radius: var(--radius); padding: 12px; display: grid; gap: 8px; }
+    .prototype-box { border: 1px solid #e7c57d; background: #fff8e8; border-radius: var(--radius); padding: 12px; display: grid; gap: 6px; }
+    .prototype-box strong { color: var(--warn); }
+    .manual-list { display: grid; gap: 8px; }
+    .manual-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; border-top: 1px solid #f0d99f; padding-top: 8px; }
+    .summary { display: flex; flex-wrap: wrap; gap: 8px; }
+    pre { margin: 0; min-height: 170px; max-height: 320px; overflow: auto; white-space: pre-wrap; word-break: break-word; border: 1px solid var(--line); border-radius: var(--radius); background: var(--code); color: #e9edf5; padding: 12px; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    .command { border: 1px solid var(--line); background: var(--surface-2); border-radius: var(--radius); padding: 10px; font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: #293241; overflow-wrap: anywhere; }
+    .note { color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .hidden { display: none; }
+    @media (max-width: 930px) {
+      main { padding: 14px; }
+      header { align-items: start; flex-direction: column; }
+      .state { text-align: left; }
+      .layout, .progress, .component-row, .grid2, .manual-item { grid-template-columns: 1fr; }
+      .stage { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Asset Factory Installer</h1>
+        <p>Run this before Codex. It prepares Codex, ComfyUI/TRELLIS2, Unity integration and validation from official sources when possible.</p>
+      </div>
+      <div class="state" id="state">Not started</div>
+    </header>
+
+    <div class="progress">
+      <div class="stage active" id="stage-system"><div class="stage-number">1</div><div><strong>System</strong><span>Preflight</span></div></div>
+      <div class="stage" id="stage-components"><div class="stage-number">2</div><div><strong>Components</strong><span>Official sources</span></div></div>
+      <div class="stage" id="stage-manual"><div class="stage-number">3</div><div><strong>Manual</strong><span>Licenses and tokens</span></div></div>
+      <div class="stage" id="stage-install"><div class="stage-number">4</div><div><strong>Install</strong><span>Missing pieces</span></div></div>
+      <div class="stage" id="stage-validate"><div class="stage-number">5</div><div><strong>Validate</strong><span>Ready for Codex</span></div></div>
+    </div>
+
+    <div class="layout">
+      <section>
+        <h2>Configuration</h2>
+        <div class="prototype-box">
+          <strong>Prototype installer</strong>
+          <p>No stability guarantee. Always run preflight first, read the plan, and install only if you understand the downloads and local writes.</p>
+        </div>
+        <div class="grid2">
+          <label>Target
+            <select id="target">
+              <option value="auto">Auto</option>
+              <option value="windows">Windows</option>
+              <option value="linux">Linux</option>
+              <option value="wsl">WSL</option>
+              <option value="docker">Docker</option>
+            </select>
+          </label>
+          <label>Profile
+            <select id="profile">
+              <option value="auto">Auto</option>
+              <option value="ada">Ada</option>
+              <option value="blackwell">Blackwell</option>
+              <option value="cpu">CPU</option>
+            </select>
+          </label>
+        </div>
+        <label>Fallback
+          <select id="fallback">
+            <option value="auto">Auto</option>
+            <option value="semi-auto">Semi-auto</option>
+            <option value="manual">Manual</option>
+          </select>
+        </label>
+        <label>Install root
+          <input id="installRoot" placeholder="<INSTALL_ROOT>" />
+        </label>
+        <label>Codex home
+          <input id="codexHome" placeholder="<CODEX_HOME>" />
+        </label>
+        <label>Unity project
+          <input id="unityProject" placeholder="<UNITY_PROJECT>" />
+        </label>
+        <div class="action-stack">
+          <button class="secondary" data-mode="dry-run">1. Preflight and plan</button>
+          <button class="primary" data-mode="install">2. Install missing allowed items (downloads)</button>
+          <button class="secondary" data-mode="validate-only">3. Validate setup</button>
+          <button class="ghost" id="copyCommand">Copy command</button>
+        </div>
+        <div class="command" id="commandPreview">.\bootstrap\install.ps1 --dry-run --target auto --profile auto</div>
+        <p class="note">The installer can run official downloads for automatable items. Gated models, tokens and license steps stay manual and visible.</p>
+      </section>
+
+      <div class="main-stack">
+        <section>
+          <h2>Current Result</h2>
+          <div class="summary" id="summary"><span class="badge">Run preflight first</span></div>
+        </section>
+
+        <section>
+          <h2>Components</h2>
+          <div class="component-list" id="components">
+            <div class="component-row header"><div>Component</div><div>Status</div><div>Source / note</div></div>
+            <div class="component-row"><div class="component-name"><strong>No plan yet</strong><span>Run preflight to inspect this machine.</span></div><div><span class="badge">waiting</span></div><div class="source">Official sources will appear here.</div></div>
+          </div>
+        </section>
+
+        <section id="manualSection" class="hidden">
+          <h2>Manual Actions</h2>
+          <div class="manual-box">
+            <h3>Human approval required</h3>
+            <p>These steps involve model access, tokens, license acceptance, or source review. The installer will not bypass them.</p>
+            <div class="manual-list" id="manualList"></div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Installer Output</h2>
+          <pre id="output">Ready.</pre>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const state = document.getElementById('state');
+    const output = document.getElementById('output');
+    const summary = document.getElementById('summary');
+    const components = document.getElementById('components');
+    const manualSection = document.getElementById('manualSection');
+    const manualList = document.getElementById('manualList');
+    const commandPreview = document.getElementById('commandPreview');
+    const commandMode = { 'dry-run': '--dry-run', install: '', 'validate-only': '--validate-only' };
+    let lastMode = 'dry-run';
+
+    document.querySelectorAll('button[data-mode]').forEach((button) => {
+      button.addEventListener('click', () => run(button.dataset.mode));
+    });
+    ['target', 'profile', 'fallback', 'installRoot', 'codexHome', 'unityProject'].forEach((id) => {
+      document.getElementById(id).addEventListener('input', () => updateCommand(lastMode));
+    });
+    document.getElementById('copyCommand').addEventListener('click', () => {
+      navigator.clipboard?.writeText(commandPreview.textContent).catch(() => {});
+    });
+    updateCommand('dry-run');
+
+    function readPayload(mode) {
+      return {
+        mode,
+        target: value('target'),
+        profile: value('profile'),
+        fallback: value('fallback'),
+        installRoot: value('installRoot'),
+        codexHome: value('codexHome'),
+        unityProject: value('unityProject'),
+        nonInteractive: true
+      };
+    }
+
+    async function run(mode) {
+      lastMode = mode;
+      updateCommand(mode);
+      setBusy(true, labelForMode(mode));
+      output.textContent = 'Running ' + labelForMode(mode) + '...';
+      setStage(mode);
+      try {
+        const response = await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(readPayload(mode))
+        });
+        const result = await response.json();
+        output.textContent = result.output || JSON.stringify(result, null, 2);
+        renderResult(result, mode);
+        setBusy(false, result.ok ? 'Ready' : 'Needs attention');
+      } catch (error) {
+        output.textContent = error.stack || String(error);
+        setBusy(false, 'Error');
+      }
+    }
+
+    function renderResult(result, mode) {
+      const data = result.data || {};
+      const plan = data.plan || {};
+      const totals = plan.summary || {};
+      const stateText = plan.state || 'unknown';
+      summary.innerHTML = [
+        badge('state: ' + stateText, stateText === 'ready' ? 'ok' : 'warn'),
+        badge('target: ' + (plan.target || value('target')), 'ok'),
+        badge('profile: ' + (plan.profile || value('profile')), 'ok'),
+        badge('present: ' + (totals.present || 0), 'ok'),
+        badge('installable: ' + (totals.installable || 0), totals.installable ? 'warn' : 'ok'),
+        badge('manual: ' + (totals.manualRequired || 0), totals.manualRequired ? 'warn' : 'ok')
+      ].join('');
+
+      const steps = Array.isArray(plan.steps) ? plan.steps : [];
+      renderComponents(steps);
+      renderManual(steps);
+      if (mode === 'validate-only') activateOnly('stage-validate');
+      else if (mode === 'install') activateOnly('stage-install');
+      else activateOnly('stage-components');
+    }
+
+    function renderComponents(steps) {
+      if (!steps.length) {
+        components.innerHTML = '<div class="component-row header"><div>Component</div><div>Status</div><div>Source / note</div></div>' +
+          '<div class="component-row"><div class="component-name"><strong>No plan returned</strong><span>Check installer output below.</span></div><div>' + badge('unknown') + '</div><div class="source">No source data.</div></div>';
+        return;
+      }
+      components.innerHTML = '<div class="component-row header"><div>Component</div><div>Status</div><div>Source / note</div></div>' + steps.map((step) => {
+        const kind = step.status === 'present' ? 'ok' : (step.status === 'installable' || step.status === 'manual_required' ? 'warn' : 'bad');
+        return '<div class="component-row">' +
+          '<div class="component-name"><strong>' + escapeHtml(step.name || step.id) + '</strong><span>' + escapeHtml(step.role || '') + '</span></div>' +
+          '<div>' + badge(step.status || 'unknown', kind) + '</div>' +
+          '<div class="source">' + linkText(step.officialSource || '') + '<br>' + escapeHtml(step.licenseNote || '') + '</div>' +
+          '</div>';
+      }).join('');
+    }
+
+    function renderManual(steps) {
+      const manual = steps.filter((step) => step.status === 'manual_required' || step.status === 'source_review_required');
+      manualSection.classList.toggle('hidden', manual.length === 0);
+      manualList.innerHTML = manual.map((step) => {
+        return '<div class="manual-item"><div><strong>' + escapeHtml(step.name || step.id) + '</strong><p>' + escapeHtml(step.manual || step.licenseNote || 'Manual review required.') + '</p></div><div>' + linkText(step.officialSource || '') + '</div></div>';
+      }).join('');
+    }
+
+    function updateCommand(mode) {
+      const args = [];
+      const flag = commandMode[mode];
+      if (flag) args.push(flag);
+      args.push('--target ' + value('target'));
+      args.push('--profile ' + value('profile'));
+      args.push('--fallback ' + value('fallback'));
+      if (value('installRoot')) args.push('--install-root "' + value('installRoot') + '"');
+      if (value('codexHome')) args.push('--codex-home "' + value('codexHome') + '"');
+      if (value('unityProject')) args.push('--unity-project "' + value('unityProject') + '"');
+      commandPreview.textContent = '.\\bootstrap\\install.ps1 ' + args.join(' ');
+    }
+
+    function setBusy(isBusy, text) {
+      state.textContent = isBusy ? 'Running: ' + text : text;
+      document.querySelectorAll('button').forEach((button) => button.disabled = isBusy);
+    }
+    function setStage(mode) {
+      if (mode === 'install') activateOnly('stage-install');
+      else if (mode === 'validate-only') activateOnly('stage-validate');
+      else activateOnly('stage-system');
+    }
+    function activateOnly(id) {
+      document.querySelectorAll('.stage').forEach((node) => node.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+    function labelForMode(mode) {
+      if (mode === 'install') return 'install';
+      if (mode === 'validate-only') return 'validation';
+      return 'preflight';
+    }
+    function value(id) { return document.getElementById(id).value.trim(); }
+    function badge(text, kind) { return '<span class="badge ' + (kind || '') + '">' + escapeHtml(text) + '</span>'; }
+    function linkText(value) {
+      const text = escapeHtml(value);
+      if (/^https?:\/\//i.test(value)) return '<a href="' + text + '" target="_blank" rel="noreferrer">' + text + '</a>';
+      return text;
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    }
+  </script>
+</body>
+</html>
+

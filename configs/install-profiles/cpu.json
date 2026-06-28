@@ -1,0 +1,98 @@
+{
+  "id": "cpu",
+  "displayName": "CPU / validation setup",
+  "description": "Lightweight profile for plugin validation, docs, Unity template setup and dry-run workflows without GPU generation.",
+  "installables": [
+    {
+      "id": "git",
+      "name": "Git",
+      "role": "Clone official repositories and track installed source revisions.",
+      "officialSource": "https://git-scm.com/downloads",
+      "licenseNote": "Review Git license and platform installer terms.",
+      "detect": { "commands": ["git"], "paths": [] },
+      "commands": { "windows": "winget install --id Git.Git -e", "linux": "Use your distribution package manager to install git.", "manual": "Download Git from the official source URL." },
+      "validation": "git --version"
+    },
+    {
+      "id": "nodejs",
+      "name": "Node.js",
+      "role": "Run the Codex plugin MCP server and validation scripts.",
+      "officialSource": "https://nodejs.org/en/download",
+      "licenseNote": "Review Node.js license and package-manager terms.",
+      "detect": { "commands": ["node", "npm"], "paths": [] },
+      "commands": { "windows": "winget install --id OpenJS.NodeJS.LTS -e", "linux": "Install Node.js LTS from the official NodeSource or distribution packages.", "manual": "Download Node.js LTS from the official source URL." },
+      "validation": "node --version && npm --version"
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "role": "Run validation, post-generation scripts and dry-run pipeline tools.",
+      "officialSource": "https://www.python.org/downloads/",
+      "licenseNote": "Review Python license and installer options.",
+      "detect": { "commands": ["python"], "paths": [] },
+      "commands": { "windows": "winget install --id Python.Python.3.11 -e", "linux": "Install Python 3.11 or 3.12 from the official packages for your distribution.", "manual": "Download Python from the official source URL." },
+      "validation": "python --version"
+    },
+    {
+      "id": "codex",
+      "name": "OpenAI Codex / ChatGPT Codex",
+      "role": "Decision layer, plugin host and user-controlled orchestration surface.",
+      "officialSource": "https://chatgpt.com/codex",
+      "licenseNote": "Review OpenAI terms, account requirements and product documentation.",
+      "detect": { "commands": ["codex"], "paths": ["<CODEX_HOME>"] },
+      "commands": { "manual": "Install Codex from the official OpenAI Codex entry point, then set CODEX_HOME if needed." },
+      "validation": "codex --version and Codex app plugin list"
+    },
+    {
+      "id": "codex-unity-comfyui-pipeline",
+      "name": "Codex Unity ComfyUI Pipeline plugin",
+      "role": "Asset Factory app, MCP tools, skills, Unity templates and pipeline scripts.",
+      "officialSource": "local plugin bundle",
+      "licenseNote": "Review this plugin license plus all external tool licenses.",
+      "detect": { "commands": [], "paths": ["<PLUGIN_ROOT>/.codex-plugin/plugin.json", "<PLUGIN_ROOT>/mcp/server.mjs"] },
+      "commands": { "all": "scripts/sync_plugin_install.ps1" },
+      "validation": "scripts/validate_plugin.ps1 and tools/list contains open_asset_factory"
+    },
+    {
+      "id": "pytorch-cpu",
+      "name": "PyTorch CPU",
+      "role": "CPU-only validation runtime for dependency checks and dry-run development.",
+      "officialSource": "https://pytorch.org/get-started/locally/",
+      "licenseNote": "Review PyTorch license and selected package index terms.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/venv"] },
+      "commands": { "all": "python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu" },
+      "validation": "python -c \"import torch; print(torch.__version__)\""
+    },
+    {
+      "id": "dinov3",
+      "name": "DINOv3",
+      "role": "Manual/licensed model path when a workflow requires it.",
+      "officialSource": "https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m",
+      "licenseNote": "Manual download is required. Review Meta/Facebook model terms, Hugging Face access conditions and usage restrictions.",
+      "manualRequired": true,
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/models/dinov3"] },
+      "manual": "Open the official Hugging Face page, accept terms if required, download the model, then place it in <INSTALL_ROOT>/models/dinov3.",
+      "validation": "DINOv3 model file exists and checksum is recorded by the user."
+    },
+    {
+      "id": "unity",
+      "name": "Unity Hub / Unity Editor",
+      "role": "Editor runtime for importing generated assets and creating prefabs/scenes.",
+      "officialSource": "https://unity.com/download",
+      "licenseNote": "Review Unity terms, editor license, account requirements and target platform terms.",
+      "detect": { "commands": [], "paths": ["<UNITY_PROJECT>/Assets"] },
+      "commands": { "manual": "Install Unity Hub/Editor from the official source URL or point --unity-project to an existing project." },
+      "validation": "Unity project opens and compiles without AIAssetPipeline errors."
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "role": "Optional isolated setup path for validation and CPU/bootstrap scenarios.",
+      "officialSource": "https://docs.docker.com/get-started/get-docker/",
+      "licenseNote": "Review Docker Desktop or Docker Engine license for your platform.",
+      "detect": { "commands": ["docker"], "paths": [] },
+      "commands": { "manual": "Install Docker from the official source URL." },
+      "validation": "docker --version and docker compose config"
+    }
+  ]
+}

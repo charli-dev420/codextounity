@@ -1,0 +1,178 @@
+{
+  "id": "ada",
+  "displayName": "NVIDIA Ada / CUDA setup",
+  "description": "Default CUDA profile for NVIDIA Ada-class GPUs and compatible CUDA systems.",
+  "installables": [
+    {
+      "id": "git",
+      "name": "Git",
+      "role": "Clone official repositories and track installed source revisions.",
+      "officialSource": "https://git-scm.com/downloads",
+      "licenseNote": "Review Git license and platform installer terms.",
+      "detect": { "commands": ["git"], "paths": [] },
+      "commands": { "windows": "winget install --id Git.Git -e", "linux": "Use your distribution package manager to install git.", "manual": "Download Git from the official source URL." },
+      "validation": "git --version"
+    },
+    {
+      "id": "nodejs",
+      "name": "Node.js",
+      "role": "Run the Codex plugin MCP server and validation scripts.",
+      "officialSource": "https://nodejs.org/en/download",
+      "licenseNote": "Review Node.js license and package-manager terms.",
+      "detect": { "commands": ["node", "npm"], "paths": [] },
+      "commands": { "windows": "winget install --id OpenJS.NodeJS.LTS -e", "linux": "Install Node.js LTS from the official NodeSource or distribution packages.", "manual": "Download Node.js LTS from the official source URL." },
+      "validation": "node --version && npm --version"
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "role": "Run ComfyUI, TRELLIS2 helpers and Codex post-generation scripts.",
+      "officialSource": "https://www.python.org/downloads/",
+      "licenseNote": "Review Python license and installer options.",
+      "detect": { "commands": ["python"], "paths": [] },
+      "commands": { "windows": "winget install --id Python.Python.3.11 -e", "linux": "Install Python 3.11 or 3.12 from the official packages for your distribution.", "manual": "Download Python from the official source URL." },
+      "validation": "python --version"
+    },
+    {
+      "id": "codex",
+      "name": "OpenAI Codex / ChatGPT Codex",
+      "role": "Decision layer, plugin host and user-controlled orchestration surface.",
+      "officialSource": "https://chatgpt.com/codex",
+      "licenseNote": "Review OpenAI terms, account requirements and product documentation.",
+      "detect": { "commands": ["codex"], "paths": ["<CODEX_HOME>"] },
+      "commands": { "manual": "Install Codex from the official OpenAI Codex entry point, then set CODEX_HOME if needed." },
+      "validation": "codex --version and Codex app plugin list"
+    },
+    {
+      "id": "codex-unity-comfyui-pipeline",
+      "name": "Codex Unity ComfyUI Pipeline plugin",
+      "role": "Asset Factory app, MCP tools, skills, Unity templates and pipeline scripts.",
+      "officialSource": "local plugin bundle",
+      "licenseNote": "Review this plugin license plus all external tool licenses.",
+      "detect": { "commands": [], "paths": ["<PLUGIN_ROOT>/.codex-plugin/plugin.json", "<PLUGIN_ROOT>/mcp/server.mjs"] },
+      "commands": { "all": "scripts/sync_plugin_install.ps1" },
+      "validation": "scripts/validate_plugin.ps1 and tools/list contains open_asset_factory"
+    },
+    {
+      "id": "comfyui",
+      "name": "ComfyUI",
+      "role": "Local generation engine used by Codex for image-to-3D jobs.",
+      "officialSource": "https://github.com/comfyanonymous/ComfyUI",
+      "licenseNote": "Review the ComfyUI repository license and third-party node licenses.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/ComfyUI/main.py"] },
+      "commands": { "all": "git clone https://github.com/comfyanonymous/ComfyUI <INSTALL_ROOT>/ComfyUI" },
+      "validation": "python <COMFYUI_ROOT>/main.py --help"
+    },
+    {
+      "id": "comfyui-trellis2",
+      "name": "ComfyUI-Trellis2",
+      "role": "ComfyUI custom node bridge for TRELLIS2 reconstruction workflows.",
+      "officialSource": "https://github.com/visualbruno/ComfyUI-Trellis2",
+      "licenseNote": "Review the ComfyUI-Trellis2 repository license and model terms.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/ComfyUI/custom_nodes/ComfyUI-Trellis2"] },
+      "commands": { "all": "git clone https://github.com/visualbruno/ComfyUI-Trellis2 <INSTALL_ROOT>/ComfyUI/custom_nodes/ComfyUI-Trellis2" },
+      "validation": "ComfyUI loads the custom node without import errors."
+    },
+    {
+      "id": "pytorch-cuda",
+      "name": "PyTorch CUDA",
+      "role": "CUDA tensor runtime for TRELLIS2, FlashAttention and xformers.",
+      "officialSource": "https://pytorch.org/get-started/locally/",
+      "licenseNote": "Review PyTorch license and select the CUDA build matching the installed driver.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/venv"] },
+      "commands": { "all": "python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128" },
+      "validation": "python -c \"import torch; print(torch.cuda.is_available())\""
+    },
+    {
+      "id": "cuda",
+      "name": "CUDA / NVIDIA driver",
+      "role": "GPU driver and CUDA runtime support for local generation.",
+      "officialSource": "https://developer.nvidia.com/cuda-downloads",
+      "licenseNote": "Review NVIDIA CUDA toolkit and driver terms.",
+      "detect": { "commands": ["nvidia-smi"], "paths": [] },
+      "commands": { "manual": "Install or update NVIDIA drivers/CUDA from the official source URL." },
+      "validation": "nvidia-smi"
+    },
+    {
+      "id": "flash-attention",
+      "name": "FlashAttention",
+      "role": "Optional attention acceleration for supported CUDA builds.",
+      "officialSource": "https://github.com/Dao-AILab/flash-attention",
+      "licenseNote": "Review FlashAttention license and compatibility matrix before installing.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/venv/flash_attn.marker"] },
+      "commands": { "all": "python -m pip install flash-attn --no-build-isolation", "fallback": "If no compatible wheel exists, build from the official source repository or continue without FlashAttention." },
+      "validation": "python -c \"import flash_attn; print('flash-attn ok')\""
+    },
+    {
+      "id": "xformers",
+      "name": "xformers",
+      "role": "Optional memory-efficient attention dependency for ComfyUI/TRELLIS2 workflows.",
+      "officialSource": "https://github.com/facebookresearch/xformers",
+      "licenseNote": "Review xformers license and wheel compatibility with PyTorch.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/venv/xformers.marker"] },
+      "commands": { "all": "python -m pip install xformers", "fallback": "Build xformers from the official source repository if compatible wheels are unavailable." },
+      "validation": "python -c \"import xformers; print('xformers ok')\""
+    },
+    {
+      "id": "trellis2-models",
+      "name": "TRELLIS / TRELLIS2 models",
+      "role": "Official reconstruction models used by ComfyUI-Trellis2.",
+      "officialSource": "https://huggingface.co/microsoft/TRELLIS.2-4B",
+      "licenseNote": "Review model card, Hugging Face access rules, usage rights and commercial restrictions.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/models/TRELLIS.2-4B"] },
+      "commands": { "all": "Download with huggingface-cli after accepting the model terms.", "fallback": "Place downloaded model files under <INSTALL_ROOT>/models/TRELLIS.2-4B." },
+      "validation": "Required model files exist and ComfyUI-Trellis2 can load them."
+    },
+    {
+      "id": "dinov3",
+      "name": "DINOv3",
+      "role": "Optional/manual visual feature model required by some TRELLIS2 workflows.",
+      "officialSource": "https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m",
+      "licenseNote": "Manual download is required. Review Meta/Facebook model terms, Hugging Face access conditions and usage restrictions.",
+      "manualRequired": true,
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/models/dinov3"] },
+      "manual": "Open the official Hugging Face page, accept terms if required, download the model, then place it in <INSTALL_ROOT>/models/dinov3.",
+      "validation": "DINOv3 model file exists and checksum is recorded by the user."
+    },
+    {
+      "id": "unity",
+      "name": "Unity Hub / Unity Editor",
+      "role": "Editor runtime for importing generated assets and creating prefabs/scenes.",
+      "officialSource": "https://unity.com/download",
+      "licenseNote": "Review Unity terms, editor license, account requirements and target platform terms.",
+      "detect": { "commands": [], "paths": ["<UNITY_PROJECT>/Assets"] },
+      "commands": { "manual": "Install Unity Hub/Editor from the official source URL or point --unity-project to an existing project." },
+      "validation": "Unity project opens and compiles without AIAssetPipeline errors."
+    },
+    {
+      "id": "mcp-unity",
+      "name": "MCP Unity package",
+      "role": "Unity-side MCP server/package for Editor operations when available.",
+      "officialSource": "https://github.com/CoderGamester/mcp-unity",
+      "licenseNote": "Detected package metadata reports MIT. Verify the upstream repository and package license before redistribution.",
+      "detect": { "commands": [], "paths": ["<UNITY_PROJECT>/Packages/com.gamelovers.mcp-unity/package.json"] },
+      "commands": { "manual": "Install the validated MCP Unity package from its upstream repository or existing approved package source." },
+      "validation": "Unity Packages/com.gamelovers.mcp-unity/package.json exists and Unity compiles."
+    },
+    {
+      "id": "docker",
+      "name": "Docker",
+      "role": "Optional isolated setup path for validation and CPU/bootstrap scenarios.",
+      "officialSource": "https://docs.docker.com/get-started/get-docker/",
+      "licenseNote": "Review Docker Desktop or Docker Engine license for your platform.",
+      "detect": { "commands": ["docker"], "paths": [] },
+      "commands": { "manual": "Install Docker from the official source URL." },
+      "validation": "docker --version and docker compose config"
+    },
+    {
+      "id": "wsl",
+      "name": "WSL",
+      "role": "Optional Linux compatibility layer on Windows.",
+      "officialSource": "https://learn.microsoft.com/windows/wsl/install",
+      "licenseNote": "Review Microsoft WSL documentation and Linux distribution terms.",
+      "detect": { "commands": [], "paths": [] },
+      "commands": { "windows": "wsl --install", "manual": "Follow the official WSL installation guide." },
+      "validation": "wsl --status"
+    }
+  ]
+}

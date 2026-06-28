@@ -1,0 +1,63 @@
+{
+  "profileId": "door",
+  "generationDefaults": {
+    "workflow": "simple",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 18,
+    "seed": 2146628683,
+    "textureSteps": 18,
+    "sparseStructureSteps": 18
+  },
+  "pivotMode": "bottom-center",
+  "displayName": "Door",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "requireFlatBase": true,
+    "maxTriangleCount": 10000,
+    "boundsTolerance": 0.002,
+    "maxTextureSize": 1024,
+    "allowedFormats": [
+      "glb"
+    ],
+    "singleObject": true
+  },
+  "profileType": "environment",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "collider": "box",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Environment/Doors"
+  },
+  "promptRules": [
+    "single door asset",
+    "front readable proportions",
+    "entire object visible",
+    "plain uniform background",
+    "no text or measurements",
+    "clear hinge/handle silhouette if requested",
+    "flat base"
+  ],
+  "negativePromptRules": [
+    "door frame plus wall unless requested",
+    "room background",
+    "open doorway environment",
+    "multiple doors",
+    "dimension labels"
+  ],
+  "targetBounds": {
+    "x": 1.1,
+    "y": 2.1,
+    "z": 0.18
+  },
+  "faceBudget": 10000,
+  "aliases": [
+    "door",
+    "porte",
+    "gate",
+    "portal",
+    "hatch",
+    "shutter"
+  ],
+  "textureSize": 1024,
+  "unityCategory": "environment/door"
+}

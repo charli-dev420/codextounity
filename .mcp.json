@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "codex_unity_comfyui_pipeline": {
+      "command": "node",
+      "args": [
+        "./mcp/server.mjs"
+      ],
+      "cwd": "."
+    }
+  }
+}

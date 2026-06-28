@@ -1,0 +1,37 @@
+services:
+  asset-factory-runtime:
+    image: ${ASSET_FACTORY_RUNTIME_IMAGE:-codex-unity-comfyui-runtime:blackwell-cu128}
+    pull_policy: missing
+    gpus: all
+    environment:
+      ASSET_FACTORY_ROOT: /opt/asset-factory
+      COMFYUI_ROOT: /opt/asset-factory/ComfyUI
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - asset_factory_models:/opt/asset-factory/models
+      - asset_factory_work:/opt/asset-factory/work
+      - ..:/workspace/plugin:ro
+    command: asset-factory-validate-runtime
+
+  asset-factory-comfyui:
+    image: ${ASSET_FACTORY_RUNTIME_IMAGE:-codex-unity-comfyui-runtime:blackwell-cu128}
+    pull_policy: missing
+    gpus: all
+    ports:
+      - "${COMFYUI_PORT:-8188}:8188"
+    environment:
+      ASSET_FACTORY_ROOT: /opt/asset-factory
+      COMFYUI_ROOT: /opt/asset-factory/ComfyUI
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    volumes:
+      - asset_factory_models:/opt/asset-factory/models
+      - asset_factory_work:/opt/asset-factory/work
+      - ..:/workspace/plugin:ro
+    working_dir: /opt/asset-factory/ComfyUI
+    command: python main.py --listen 0.0.0.0 --port 8188
+
+volumes:
+  asset_factory_models:
+  asset_factory_work:

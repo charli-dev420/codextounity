@@ -1,0 +1,34 @@
+name: Feature request or setup tip
+description: Suggest an improvement, setup tip or workflow enhancement
+title: "[Idea]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Issues, PRs, setup tips and documentation improvements are welcome. This project is a prototype maintained by one developer.
+        Issues, PR, astuces de setup et corrections de documentation sont bienvenues. Ce projet est un prototype maintenu par une seule personne.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or opportunity
+      description: What should be easier, safer or clearer?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the expected user flow or technical change.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: Any workaround or external reference?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I understand there is no promise this will be implemented.
+          required: true

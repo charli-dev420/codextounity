@@ -1,0 +1,33 @@
+{
+  "id": "blackwell",
+  "displayName": "NVIDIA Blackwell / CUDA Docker runtime setup",
+  "description": "Profile for RTX 50 / Blackwell systems. The preferred user path is one runtime image containing CUDA, PyTorch, FlashAttention, xformers, ComfyUI, ComfyUI-Trellis2 and TRELLIS2 models. Unity and DINOv3 stay outside the image.",
+  "extends": "ada",
+  "installables": [
+    {
+      "id": "docker-runtime-image",
+      "name": "Asset Factory Blackwell runtime image",
+      "role": "Prebuilt Docker runtime for the heavy local generation stack: CUDA, PyTorch, FlashAttention, xformers, ComfyUI, ComfyUI-Trellis2 and TRELLIS2 models. Excludes Unity and DINOv3.",
+      "officialSource": "Docker image from ASSET_FACTORY_RUNTIME_IMAGE, or local build from docker/runtime/Dockerfile.blackwell using official upstream sources.",
+      "licenseNote": "The image includes external tools and models. Verify all licenses, model cards, access terms and redistribution rules before publishing or using commercially.",
+      "detect": { "commands": [], "paths": [] },
+      "commands": {
+        "pull": "docker pull ${ASSET_FACTORY_RUNTIME_IMAGE}",
+        "build": "docker/build_runtime.ps1 -Stage all -BuildJobs 1 -IncludeTrellis2Models",
+        "fallback": "If no published image is configured, build locally from docker/runtime/Dockerfile.blackwell. Unity and DINOv3 remain manual/external."
+      },
+      "validation": "docker run --rm --gpus all <runtime-image> asset-factory-validate-runtime"
+    },
+    {
+      "id": "blackwell-workaround",
+      "name": "TRELLIS2 Blackwell workaround",
+      "role": "Compatibility patch path for Blackwell GPUs when official dependency wheels are not yet compatible.",
+      "officialSource": "https://github.com/ThatButters/trellis2-blackwell-fix",
+      "licenseNote": "Review the repository license and verify each patch against official TRELLIS2/ComfyUI-Trellis2 updates before use.",
+      "detect": { "commands": [], "paths": ["<INSTALL_ROOT>/blackwell-workarounds/trellis2-blackwell-fix"] },
+      "commands": { "all": "git clone https://github.com/ThatButters/trellis2-blackwell-fix <INSTALL_ROOT>/blackwell-workarounds/trellis2-blackwell-fix", "fallback": "Use manual patch review if automatic patching is not appropriate." },
+      "validation": "Record applied commit and run ComfyUI-Trellis2 import test."
+    }
+  ]
+}
+

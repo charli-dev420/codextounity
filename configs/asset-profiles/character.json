@@ -1,0 +1,67 @@
+{
+  "profileId": "character",
+  "generationDefaults": {
+    "workflow": "mesh-with-texturing",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 20,
+    "seed": 2146628683,
+    "textureSteps": 20,
+    "sparseStructureSteps": 20
+  },
+  "pivotMode": "bottom-center",
+  "displayName": "Character",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "maxTriangleCount": 25000,
+    "boundsTolerance": 0.005,
+    "supportsSockets": true,
+    "maxTextureSize": 1024,
+    "allowedFormats": [
+      "glb"
+    ],
+    "singleObject": true
+  },
+  "profileType": "character",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "createAttachmentManifest": true,
+    "collider": "capsule",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Characters"
+  },
+  "promptRules": [
+    "single full body character",
+    "neutral pose",
+    "A-pose or relaxed idle if possible",
+    "plain uniform background",
+    "no text",
+    "no weapon unless requested",
+    "feet visible",
+    "full silhouette visible"
+  ],
+  "negativePromptRules": [
+    "cropped limbs",
+    "dynamic action pose",
+    "multiple characters",
+    "environment background",
+    "text labels",
+    "weapon fused to hand unless requested"
+  ],
+  "targetBounds": {
+    "x": 0.8,
+    "y": 1.8,
+    "z": 0.5
+  },
+  "faceBudget": 25000,
+  "aliases": [
+    "character",
+    "personnage",
+    "npc",
+    "enemy",
+    "hero",
+    "creature",
+    "humanoid"
+  ],
+  "textureSize": 1024,
+  "unityCategory": "characters"
+}

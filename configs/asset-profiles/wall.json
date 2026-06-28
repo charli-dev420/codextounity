@@ -1,0 +1,71 @@
+{
+  "profileId": "wall",
+  "generationDefaults": {
+    "workflow": "simple",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 18,
+    "seed": 2146628683,
+    "textureSteps": 18,
+    "sparseStructureSteps": 18
+  },
+  "pivotMode": "bottom-center",
+  "displayName": "Wall",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "requireFlatBase": true,
+    "maxTriangleCount": 12000,
+    "boundsTolerance": 0.002,
+    "requireStraightEdges": true,
+    "maxTextureSize": 1024,
+    "allowedFormats": [
+      "glb"
+    ],
+    "singleObject": true
+  },
+  "profileType": "environment",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "collider": "box",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Environment/Walls"
+  },
+  "promptRules": [
+    "single straight wall segment",
+    "3/4 top-down view",
+    "entire object visible",
+    "plain uniform background",
+    "no cast shadow",
+    "no text or measurements",
+    "parallel top and bottom edges",
+    "flat base",
+    "consistent thickness"
+  ],
+  "negativePromptRules": [
+    "bent silhouette",
+    "curved top edge unless requested",
+    "perspective ruler",
+    "dimension labels",
+    "floor plane",
+    "contact shadow",
+    "multiple wall pieces"
+  ],
+  "targetBounds": {
+    "x": 4.0,
+    "y": 2.0,
+    "z": 0.35
+  },
+  "faceBudget": 12000,
+  "aliases": [
+    "wall",
+    "mur",
+    "muret",
+    "meurtriere",
+    "battlement",
+    "parapet",
+    "barrier",
+    "fence",
+    "cloison"
+  ],
+  "textureSize": 1024,
+  "unityCategory": "environment/wall"
+}

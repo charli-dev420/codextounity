@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Asset Factory</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101112;
+      --panel: #181a1d;
+      --line: #2d3238;
+      --muted: #aeb6c2;
+      --text: #f4f7fb;
+      --accent: #3b82f6;
+      --accent-2: #20b486;
+      --warn: #e3a13b;
+      --bad: #e05252;
+      --input: #121417;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--bg); color: var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 14px; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }
+    h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0; }
+    .status { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; min-width: 0; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--accent-2); flex: 0 0 auto; }
+    .tabs { display: flex; flex-wrap: wrap; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+    .tab { width: auto; flex: 0 0 auto; border: 1px solid var(--line); background: #1f2328; color: var(--text); border-radius: 6px; min-height: 36px; padding: 0 12px; cursor: pointer; }
+    .tab.active { border-color: var(--accent); background: var(--accent); }
+    .layout { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, .8fr); gap: 12px; align-items: start; }
+    .panel { display: none; border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px; gap: 10px; }
+    .panel.active { display: grid; }
+    .side { display: grid; gap: 12px; }
+    .box { border: 1px solid var(--line); background: var(--panel); border-radius: 8px; padding: 12px; display: grid; gap: 8px; }
+    h2 { margin: 0; font-size: 14px; font-weight: 650; }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 12px; min-width: 0; }
+    input, textarea, select, button { width: 100%; min-width: 0; border-radius: 6px; border: 1px solid var(--line); background: var(--input); color: var(--text); padding: 8px; font: inherit; letter-spacing: 0; }
+    textarea { min-height: 72px; resize: vertical; line-height: 1.35; }
+    button { cursor: pointer; background: #222832; font-weight: 650; min-height: 38px; }
+    button.primary { background: var(--accent); border-color: var(--accent); }
+    button.good { background: #167a5f; border-color: #167a5f; }
+    button.warn { background: #8a6123; border-color: #8a6123; }
+    button.bad { background: #8f3030; border-color: #8f3030; }
+    .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .row > button { flex: 1 1 150px; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .chip { border: 1px solid var(--line); background: #20242a; color: var(--muted); border-radius: 999px; padding: 4px 8px; font-size: 12px; }
+    .chip.ok { color: #bff8df; border-color: #237d5f; }
+    .chip.warn { color: #ffe0a6; border-color: #8a6123; }
+    .chip.bad { color: #ffc2c2; border-color: #8f3030; }
+    pre { margin: 0; white-space: pre-wrap; word-break: break-word; background: #08090a; border: 1px solid var(--line); border-radius: 8px; padding: 10px; min-height: 120px; max-height: 280px; overflow: auto; font-size: 12px; line-height: 1.35; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th, td { text-align: left; border-bottom: 1px solid var(--line); padding: 6px 4px; vertical-align: top; }
+    th { color: var(--muted); font-weight: 650; }
+    .preview { border: 1px dashed var(--line); border-radius: 8px; min-height: 150px; display: grid; place-items: center; overflow: hidden; background: #0d0f12; color: var(--muted); font-size: 12px; }
+    .preview img { width: 100%; height: 100%; object-fit: contain; max-height: 260px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } .grid3 { grid-template-columns: 1fr; } .grid2 { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Asset Factory</h1>
+      <div class="status"><span class="dot" id="hostDot"></span><span id="hostStatus">Ready</span></div>
+    </header>
+
+    <nav class="tabs" aria-label="Asset Factory tabs">
+      <button class="tab active" data-tab="asset">Asset</button>
+      <button class="tab" data-tab="reference">Image / Reference</button>
+      <button class="tab" data-tab="generation">Generation</button>
+      <button class="tab" data-tab="review">Review / Adjust</button>
+      <button class="tab" data-tab="unity">Unity Import</button>
+      <button class="tab" data-tab="sockets">Character Sockets</button>
+    </nav>
+
+    <div class="layout">
+      <section>
+        <div id="asset" class="panel active">
+          <h2>Asset</h2>
+          <div class="grid2">
+            <label>Asset name<input id="assetName" value="new_asset" /></label>
+            <label>Profile<select id="profile"><option>wall</option><option>door</option><option>prop</option><option>weapon</option><option>pickup</option><option>character</option><option>equipment</option><option>terrain_piece</option></select></label>
+          </div>
+          <label>Description<textarea id="description">single clean game-ready asset</textarea></label>
+          <label>Style<input id="style" value="stylized mobile game asset" /></label>
+          <div class="grid3">
+            <label>Width<input id="targetWidth" type="number" step="0.01" value="4" /></label>
+            <label>Height<input id="targetHeight" type="number" step="0.01" value="2" /></label>
+            <label>Depth<input id="targetDepth" type="number" step="0.01" value="0.35" /></label>
+          </div>
+          <div class="row"><button class="primary" data-call="plan_asset">Plan</button><button data-copy="plan">Copy plan</button></div>
+        </div>
+
+        <div id="reference" class="panel">
+          <h2>Image / Reference</h2>
+          <label>Reference image path<input id="referenceImagePath" placeholder="<WORK_DIR>\reference.png" /></label>
+          <div class="grid2">
+            <label>View<input id="view" value="3/4 top-down, entire object visible" /></label>
+            <label>Background<input id="background" value="plain uniform matte background" /></label>
+          </div>
+          <div class="preview" id="referencePreview">No preview</div>
+          <div class="row"><button data-call="plan_reference_image">Reference brief</button><button data-call="register_reference_image">Register</button><button class="good" data-call="validate_reference_image">Validate</button></div>
+        </div>
+
+        <div id="generation" class="panel">
+          <h2>Generation</h2>
+          <label>Work dir<input id="workDir" value="<WORK_DIR>" /></label>
+          <div class="grid3">
+            <label>Faces<input id="targetFaces" type="number" value="12000" /></label>
+            <label>Texture<input id="textureSize" type="number" value="1024" /></label>
+            <label>Views<input id="maxViews" type="number" value="4" /></label>
+          </div>
+          <div class="grid2">
+            <label>ComfyUI server<input id="comfyServer" value="http://127.0.0.1:8000" /></label>
+            <label>Workflow<select id="workflow"><option>simple</option><option>low-poly</option><option>mesh-only-hq</option><option>mesh-with-texturing</option><option>mesh-with-texturing-hq</option></select></label>
+          </div>
+          <div class="row"><button data-call="run_asset_pipeline" data-dry="1">Dry-run</button><button class="primary" data-call="start_asset_pipeline_job">Start job</button><button data-call="job_status">Status</button><button class="bad" data-call="cancel_pipeline_job">Cancel</button></div>
+          <label>Job id<input id="jobId" placeholder="latest" /></label>
+          <label>Runtime instruction<textarea id="instruction" placeholder="Keep straight bounds, bottom-center pivot, reduce faces, reject bent silhouette"></textarea></label>
+          <button data-call="add_pipeline_instruction">Add instruction</button>
+        </div>
+
+        <div id="review" class="panel">
+          <h2>Review / Adjust</h2>
+          <label>Input mesh<input id="inputMesh" placeholder="<WORK_DIR>\raw.glb" /></label>
+          <label>Output mesh<input id="outputMesh" placeholder="<WORK_DIR>\adjusted.glb" /></label>
+          <div class="grid3">
+            <label>Rotate XYZ<input id="rotateEuler" value="0,0,0" /></label>
+            <label>Scale XYZ<input id="scale" value="1,1,1" /></label>
+            <label>Offset XYZ<input id="offset" value="0,0,0" /></label>
+          </div>
+          <div class="grid2">
+            <label>Target bounds XYZ<input id="targetBounds" value="4,2,0.35" /></label>
+            <label>Pivot<select id="pivot"><option>bottom-center</option><option>center</option><option>origin</option><option>custom</option><option>keep</option></select></label>
+          </div>
+          <div class="grid3">
+            <label>Axis remap<input id="axisRemap" value="x,y,z" /></label>
+            <label>Custom pivot<input id="customPivot" value="0,0,0" /></label>
+            <label>Tolerance<input id="tolerance" type="number" step="0.0005" value="0.002" /></label>
+          </div>
+          <label>Report path<input id="report" /></label>
+          <button class="primary" data-call="adjust_generated_asset">Adjust mesh</button>
+        </div>
+
+        <div id="unity" class="panel">
+          <h2>Unity Import</h2>
+          <label>Unity project<input id="unityProject" placeholder="<UNITY_PROJECT>" /></label>
+          <label>Unity subdir<input id="unitySubdir" value="Assets/AIAssetPipeline/Generated/UnityReady" /></label>
+          <div class="row"><button data-call="install_unity_template">Install template</button><button class="primary" data-call="import_asset_to_unity">Import asset</button></div>
+        </div>
+
+        <div id="sockets" class="panel">
+          <h2>Character Sockets</h2>
+          <div class="grid2">
+            <label>Character id<input id="characterId" value="hero" /></label>
+            <label>Manifest path<input id="manifestPath" /></label>
+          </div>
+          <div class="grid3">
+            <label>Slot id<input id="slotId" value="main_hand" /></label>
+            <label>Bone<input id="bone" value="RightHand" /></label>
+            <label>Category<input id="equipmentCategory" value="weapon_or_handheld" /></label>
+          </div>
+          <div class="grid3">
+            <label>Position<input id="slotPosition" value="0.08,-0.02,0.02" /></label>
+            <label>Rotation<input id="slotRotation" value="0,90,0" /></label>
+            <label>Scale<input id="slotScale" value="1,1,1" /></label>
+          </div>
+          <div class="grid2">
+            <label>Preview pose<input id="previewPose" value="combat_idle" /></label>
+            <label>Socket export path<input id="socketExportPath" /></label>
+          </div>
+          <label>Notes<textarea id="slotNotes"></textarea></label>
+          <div class="row"><button data-call="plan_character_attachments">Plan</button><button data-call="create_character_attachment_manifest">Create</button><button data-call="update_character_attachment_slot">Update slot</button><button data-call="list_character_attachment_slots">List</button><button data-call="export_unity_socket_prefab_data">Export Unity data</button><button class="good" data-call="validate_character_attachment_manifest">Validate</button></div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div class="box">
+          <h2>Status</h2>
+          <div class="chips" id="chips"><span class="chip">idle</span></div>
+        </div>
+        <div class="box">
+          <h2>Artifacts</h2>
+          <table><thead><tr><th>Kind</th><th>Path</th><th>Size</th></tr></thead><tbody id="artifacts"><tr><td colspan="3">No artifacts</td></tr></tbody></table>
+        </div>
+        <div class="box">
+          <h2>Output</h2>
+          <pre id="out">Ready.</pre>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const out = $('out');
+    const hostStatus = $('hostStatus');
+    const hostDot = $('hostDot');
+    const artifacts = $('artifacts');
+    const chips = $('chips');
+    let lastResult = null;
+
+    document.querySelectorAll('.tab').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.tab,.panel').forEach((node) => node.classList.remove('active'));
+        button.classList.add('active');
+        $(button.dataset.tab).classList.add('active');
+      });
+    });
+
+    $('referenceImagePath').addEventListener('input', updatePreview);
+    document.querySelectorAll('button[data-call]').forEach((button) => button.addEventListener('click', () => call(button.dataset.call, button)));
+    document.querySelectorAll('button[data-copy]').forEach((button) => button.addEventListener('click', copyLast));
+
+    function baseArgs() {
+      return {
+        assetName: $('assetName').value.trim(), profile: $('profile').value, description: $('description').value, style: $('style').value,
+        targetWidth: Number($('targetWidth').value), targetHeight: Number($('targetHeight').value), targetDepth: Number($('targetDepth').value),
+        referenceImagePath: $('referenceImagePath').value.trim(), workDir: $('workDir').value.trim(), unityProject: $('unityProject').value.trim(),
+        comfyServer: $('comfyServer').value.trim(), workflow: $('workflow').value, targetFaces: Number($('targetFaces').value), textureSize: Number($('textureSize').value), maxViews: Number($('maxViews').value)
+      };
+    }
+
+    function argsFor(name, button) {
+      const args = baseArgs();
+      if (button?.dataset.dry) args.dryRun = true;
+      if (name === 'plan_reference_image') return { assetName: args.assetName, profile: args.profile, description: args.description, style: args.style, view: $('view').value, background: $('background').value };
+      if (name === 'register_reference_image') return { workDir: args.workDir, assetName: args.assetName, imagePath: args.referenceImagePath, source: 'manual', prompt: args.description };
+      if (name === 'validate_reference_image') return { imagePath: args.referenceImagePath, profile: args.profile, expectedObject: args.assetName };
+      if (name === 'job_status') return { workDir: args.workDir, jobId: $('jobId').value.trim() || 'latest', includeLogs: true };
+      if (name === 'add_pipeline_instruction') return { workDir: args.workDir, jobId: $('jobId').value.trim() || 'latest', instruction: $('instruction').value, author: 'manual' };
+      if (name === 'cancel_pipeline_job') return { workDir: args.workDir, jobId: $('jobId').value.trim() || 'latest' };
+      if (name === 'adjust_generated_asset') return { inputMesh: $('inputMesh').value.trim(), outputMesh: $('outputMesh').value.trim(), rotateEuler: $('rotateEuler').value, scale: $('scale').value, offset: $('offset').value, targetBounds: $('targetBounds').value, pivot: $('pivot').value, axisRemap: $('axisRemap').value, customPivot: $('customPivot').value, tolerance: Number($('tolerance').value), report: $('report').value.trim() };
+      if (name === 'install_unity_template') return { unityProject: args.unityProject, force: true };
+      if (name === 'import_asset_to_unity') return { meshPath: $('outputMesh').value.trim() || $('inputMesh').value.trim(), unityProject: args.unityProject, assetId: args.assetName, referenceImagePath: args.referenceImagePath, unitySubdir: $('unitySubdir').value, normalizationReport: $('report').value.trim(), characterAttachments: $('manifestPath').value.trim() };
+      if (name === 'plan_character_attachments') return { characterId: $('characterId').value.trim(), rigName: 'Humanoid', equipmentKinds: [$('equipmentCategory').value], animationUse: $('previewPose').value };
+      if (name === 'create_character_attachment_manifest') return { characterId: $('characterId').value.trim(), rigName: 'Humanoid', outPath: $('manifestPath').value.trim(), notes: $('slotNotes').value };
+      if (name === 'update_character_attachment_slot') return { manifestPath: $('manifestPath').value.trim(), slotId: $('slotId').value.trim(), bone: $('bone').value.trim(), position: $('slotPosition').value, rotationEuler: $('slotRotation').value, scale: $('slotScale').value, equipmentCategory: $('equipmentCategory').value, previewPose: $('previewPose').value, notes: $('slotNotes').value };
+      if (name === 'list_character_attachment_slots' || name === 'validate_character_attachment_manifest') return { manifestPath: $('manifestPath').value.trim() };
+      if (name === 'export_unity_socket_prefab_data') return { manifestPath: $('manifestPath').value.trim(), outPath: $('socketExportPath').value.trim() };
+      return args;
+    }
+
+    async function call(name, button) {
+      const args = argsFor(name, button);
+      setBusy(name);
+      if (!window.openai || typeof window.openai.callTool !== 'function') {
+        out.textContent = 'Host callTool unavailable. Ask Codex to call ' + name + ' with:\n' + JSON.stringify(args, null, 2);
+        setIdle('manual');
+        return;
+      }
+      try {
+        const response = await window.openai.callTool(name, args);
+        lastResult = response;
+        out.textContent = JSON.stringify(response, null, 2);
+        updateFromResult(response);
+        setIdle('ok');
+      } catch (error) {
+        out.textContent = error?.stack || String(error);
+        setIdle('error');
+      }
+    }
+
+    function updateFromResult(response) {
+      const data = response?.structuredContent || response?.result?.structuredContent || response;
+      const nextChips = [];
+      if (data?.job?.state) nextChips.push(['ok', 'job ' + data.job.state]);
+      if (data?.validation?.valid === false || data?.valid === false) nextChips.push(['bad', 'invalid']);
+      if (data?.validation?.valid === true || data?.valid === true) nextChips.push(['ok', 'valid']);
+      if (data?.exitCode && data.exitCode !== 0) nextChips.push(['bad', 'exit ' + data.exitCode]);
+      if (data?.exitCode === 0) nextChips.push(['ok', 'exit 0']);
+      if (!nextChips.length) nextChips.push(['ok', 'ready']);
+      chips.innerHTML = nextChips.map(([kind, text]) => '<span class="chip ' + kind + '">' + escapeHtml(text) + '</span>').join('');
+      const rows = data?.artifacts || data?.structuredContent?.artifacts || [];
+      if (Array.isArray(rows) && rows.length) {
+        artifacts.innerHTML = rows.slice(0, 20).map((item) => '<tr><td>' + escapeHtml(item.kind || '') + '</td><td class="mono">' + escapeHtml(item.path || '') + '</td><td>' + escapeHtml(String(item.bytes || '')) + '</td></tr>').join('');
+      }
+    }
+
+    function updatePreview() {
+      const value = $('referenceImagePath').value.trim();
+      const box = $('referencePreview');
+      if (!value) { box.textContent = 'No preview'; return; }
+      if (/^https?:\/\//i.test(value) || /^file:\/\//i.test(value)) box.innerHTML = '<img alt="Reference preview" src="' + escapeAttr(value) + '" />';
+      else box.innerHTML = '<span class="mono">' + escapeHtml(value) + '</span>';
+    }
+
+    function setBusy(name) { hostDot.style.background = 'var(--warn)'; hostStatus.textContent = 'Running ' + name; }
+    function setIdle(state) { hostDot.style.background = state === 'error' ? 'var(--bad)' : 'var(--accent-2)'; hostStatus.textContent = state === 'error' ? 'Error' : 'Ready'; }
+    function copyLast() { navigator.clipboard?.writeText(JSON.stringify(lastResult, null, 2) || '').catch(() => {}); }
+    function escapeHtml(value) { return String(value).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+    function escapeAttr(value) { return escapeHtml(value).replace(/'/g, '&#39;'); }
+    updatePreview();
+  </script>
+</body>
+</html>
+

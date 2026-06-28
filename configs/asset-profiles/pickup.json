@@ -1,0 +1,64 @@
+{
+  "profileId": "pickup",
+  "generationDefaults": {
+    "workflow": "simple",
+    "maxViews": 4,
+    "sampler": "euler",
+    "shapeSteps": 16,
+    "seed": 2146628683,
+    "textureSteps": 16,
+    "sparseStructureSteps": 16
+  },
+  "pivotMode": "bottom-center",
+  "displayName": "Pickup",
+  "schema": "codex.assetProfile.v1",
+  "validationRules": {
+    "singleObject": true,
+    "maxTriangleCount": 5000,
+    "boundsTolerance": 0.004,
+    "maxTextureSize": 512,
+    "allowedFormats": [
+      "glb"
+    ]
+  },
+  "profileType": "gameplay",
+  "importDefaults": {
+    "prefabNaming": "AI_{assetName}",
+    "collider": "sphere",
+    "unitySubdir": "Assets/AIAssetPipeline/Generated/UnityReady/Gameplay/Pickups"
+  },
+  "promptRules": [
+    "single pickup item",
+    "readable gameplay silhouette",
+    "plain uniform background",
+    "no text",
+    "centered object",
+    "slightly exaggerated proportions"
+  ],
+  "negativePromptRules": [
+    "inventory UI",
+    "text label",
+    "multiple coins unless requested as one pile",
+    "floor shadow",
+    "hand holding item"
+  ],
+  "targetBounds": {
+    "x": 0.45,
+    "y": 0.45,
+    "z": 0.45
+  },
+  "faceBudget": 5000,
+  "aliases": [
+    "pickup",
+    "collectible",
+    "loot",
+    "potion",
+    "coin",
+    "key",
+    "gem",
+    "bonus",
+    "powerup"
+  ],
+  "textureSize": 512,
+  "unityCategory": "gameplay/pickups"
+}
