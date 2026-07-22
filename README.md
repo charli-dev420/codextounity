@@ -6,8 +6,9 @@ Prototype local d'installeur et de plugin Codex pour generer, controler, normali
 
 ### Statut du projet
 
-Ce depot est maintenu par un seul developpeur et reste un prototype.
+Ce depot est maintenu par un seul developpeur et reste un prototype experimental, globalement non teste sur la diversite des machines.
 
+- Aucune garantie, de quelque nature que ce soit.
 - Aucune promesse de stabilite.
 - Aucune promesse que les installeurs fonctionnent sur toutes les machines.
 - Aucun SLA de support.
@@ -28,7 +29,14 @@ Lancez toujours un dry-run avant une installation reelle. Lisez le plan d'instal
 
 ### Demarrage rapide
 
-Interface d'installation :
+Executable Windows experimental pour utilisateurs novices :
+
+```powershell
+.\installer\windows\build-installer.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
+```
+
+Interface web locale pour developpeurs :
 
 ```powershell
 .\bootstrap\start-ui.ps1
@@ -81,8 +89,9 @@ Local prototype installer and Codex plugin for generating, reviewing, normalizin
 
 ### Project Status
 
-This repository is maintained by a single developer and is currently a prototype.
+This repository is maintained by a single developer and is an experimental prototype that is not broadly tested across machines.
 
+- No guarantee of any kind.
 - No stability guarantee.
 - No promise that installers work on every machine.
 - No support SLA.
@@ -103,7 +112,14 @@ Always run dry-runs first. Read the installer plan before allowing downloads or 
 
 ### Quick Start
 
-Installer UI:
+Experimental Windows executable for novice users:
+
+```powershell
+.\installer\windows\build-installer.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
+```
+
+Local web UI for developers:
 
 ```powershell
 .\bootstrap\start-ui.ps1
@@ -161,6 +177,9 @@ Do not publish tokens, secrets, personal paths, model files, generated meshes/im
 - Architecture: `docs/fr/ARCHITECTURE.md` and `docs/en/ARCHITECTURE.md`
 - Credits and disclaimer: `docs/fr/CREDITS_AND_DISCLAIMER.md` and `docs/en/CREDITS_AND_DISCLAIMER.md`
 - Troubleshooting: `docs/fr/TROUBLESHOOTING.md` and `docs/en/TROUBLESHOOTING.md`
+- Roadmap de poursuite: `docs/ROADMAP.md`
+- TRELLIS2 / ComfyUI workflows: `workflows/README_TRELLIS2_COMFYUI.md`
+- Public readiness plan: `docs/PUBLIC_READINESS_AUDIT.md`
 - Contributions: `CONTRIBUTING.md`
 - Support: `SUPPORT.md`
 - Security: `SECURITY.md`

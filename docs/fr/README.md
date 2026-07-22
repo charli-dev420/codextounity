@@ -4,8 +4,9 @@ Ce projet fournit un installeur local autonome, puis un plugin Codex pour pilote
 
 ## Statut du projet
 
-Ce depot est un prototype maintenu par un seul developpeur.
+Ce depot est un prototype experimental maintenu par un seul developpeur, globalement non teste sur la diversite des machines.
 
+- Aucune garantie, de quelque nature que ce soit.
 - Aucune promesse de stabilite.
 - Aucune promesse que les installeurs fonctionnent sur toutes les machines.
 - Support au mieux, sans SLA.
@@ -28,7 +29,14 @@ Codex reste le maitre de decision sous la direction de l'utilisateur. ComfyUI et
 
 ## Demarrage rapide
 
-Interface installeur :
+Executable Windows experimental :
+
+```powershell
+.\installer\windows\build-installer.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
+```
+
+Interface web locale developpeur :
 
 ```powershell
 .\bootstrap\start-ui.ps1

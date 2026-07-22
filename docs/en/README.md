@@ -4,8 +4,9 @@ This project provides a local standalone installer first, then a Codex plugin fo
 
 ## Project Status
 
-This repository is a prototype maintained by a single developer.
+This repository is an experimental prototype maintained by a single developer and is not broadly tested across machines.
 
+- No guarantee of any kind.
 - No stability guarantee.
 - No promise that installers work on every machine.
 - Best-effort support only, with no SLA.
@@ -28,7 +29,14 @@ Codex remains the decision layer under the user's direction. ComfyUI and TRELLIS
 
 ## Quick Start
 
-Installer UI:
+Experimental Windows executable:
+
+```powershell
+.\installer\windows\build-installer.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
+```
+
+Local developer web UI:
 
 ```powershell
 .\bootstrap\start-ui.ps1

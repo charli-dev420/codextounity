@@ -5,7 +5,7 @@ description: Orchestrate local ComfyUI/TRELLIS image-to-3D generation for Unity 
 
 # Unity ComfyUI Pipeline
 
-Use this skill when the user asks Codex to generate, process, normalize, validate, or import Unity-ready 3D assets using local ComfyUI, TRELLIS/TRELLIS2, or this plugin.
+Use this skill when the user asks Codex to generate, process, normalize, validate, or import Unity-ready 3D assets using local ComfyUI, TRELLIS/TRELLIS2, or this plugin. Also use it when the user explicitly asks to generate asset reference images in local ComfyUI with Flux NVFP4 before image-to-3D.
 
 ## Operating Model
 
@@ -28,8 +28,10 @@ Resolve paths relative to this skill's plugin root:
 - `scripts/character_attachment_manifest.py`: character equipment/animation socket manifest tooling for stable attachment points on bones such as hands, back, head, chest, and hips.
 - `scripts/normalize_wall_glbs.py`: optional wall/vault-specific GLB normalizer. Use only when the requested asset family really is walls/vaults.
 - `scripts/install_unity_template.ps1`: copies the Unity Editor template into a Unity project.
-- `workflows/`: bundled ComfyUI API/UI workflow JSON files.
+- `workflows/`: bundled ComfyUI API/UI workflow JSON files, including the optional experimental Flux NVFP4 reference-image workflow.
 - `unity/Assets/AIAssetPipeline/`: Unity Editor template payload.
+
+Bundled Flux NVFP4 image workflow: `workflows/flux1-dev-nvfp4-reference-image.api.json`. It expects local ComfyUI nodes that provide `UNETLoader`, `DualCLIPLoader` and `CLIPTextEncodeFlux`, plus `flux1-dev-nvfp4.safetensors`, `ae.safetensors`, `clip_l.safetensors` and `t5xxl_fp8_e4m3fn_scaled.safetensors`. Treat this as an experimental convenience template, not a guaranteed install. If a user provides a different local Flux NVFP4 workflow, prefer the user-provided workflow.
 
 ## Workflow
 
@@ -45,7 +47,16 @@ Resolve paths relative to this skill's plugin root:
    - Confirm ComfyUI is reachable before non-dry-run generation.
    - Prefer a dry run before a long GPU job when scope is ambiguous.
 
-3. If Codex created or selected the reference image, place it in the TRELLIS2 input directory first:
+3. Optional Flux NVFP4 reference image generation in ComfyUI:
+   - Do this only when the user explicitly asks for ComfyUI image generation.
+   - Use Flux NVFP4 locally in ComfyUI; do not use online image generation or another checkpoint unless the user approves the change.
+   - Default workflow path when no other local workflow is provided: `workflows/flux1-dev-nvfp4-reference-image.api.json`.
+   - Require or discover a concrete workflow path, output directory, prompt, seed, size, ComfyUI URL, and model/checkpoint/UNet name.
+   - Generate a single-object reference image with a plain background, no text, no dimension labels, full object visible, and lighting suitable for TRELLIS2.
+   - Treat the output as a reference image only. Register and validate it before starting image-to-3D.
+   - Report the workflow path, model name, seed, prompt, output file, and any ComfyUI errors.
+
+4. If Codex created or selected the reference image, place it in the TRELLIS2 input directory first:
 
 ```powershell
 python .\scripts\prepare_trellis2_reference_image.py `
@@ -67,7 +78,7 @@ python .\scripts\generate_asset.py `
   --unity-project <unity-project-root>
 ```
 
-4. Run generation through local ComfyUI:
+5. Run generation through local ComfyUI:
 
 ```powershell
 .\scripts\run_trellis2_assets.ps1 `
@@ -77,7 +88,7 @@ python .\scripts\generate_asset.py `
   -OfficialWorkflow simple
 ```
 
-5. Post-process as Codex:
+6. Post-process as Codex:
 
 ```powershell
 python .\scripts\postprocess_generation.py `
@@ -87,13 +98,14 @@ python .\scripts\postprocess_generation.py `
   --limit 1
 ```
 
-6. If Unity tooling is requested, install the template:
+7. If Unity tooling is requested, install the template:
 
 ```powershell
 .\scripts\install_unity_template.ps1 -UnityProjectRoot <unity-project-root>
 ```
 
-7. Report concrete output paths:
+8. Report concrete output paths:
+   - Flux NVFP4 image output path when ComfyUI image generation was explicitly requested,
    - placed TRELLIS2 reference image path,
    - selected mesh files,
    - copied Unity-ready files,
@@ -103,8 +115,11 @@ python .\scripts\postprocess_generation.py `
 ## Decision Rules
 
 - Ask the user before launching expensive or long GPU generation unless they already gave an explicit run command or batch scope.
+- Do not generate asset reference images in ComfyUI unless the user explicitly asks for that step. If requested, default to Flux NVFP4 and keep the image-generation step separate from TRELLIS2 mesh generation.
 - For app-driven work, prefer monitorable jobs: expose status, logs, cancellation, runtime instructions, and manual/Codex adjustments before final Unity import.
 - Treat dimensions, pivot, orientation, triangle budget, texture size, and import placement as user/Codex-controlled post-generation decisions, not as promises made to TRELLIS through text in the image.
+- Never normalize by deforming mesh proportions. Target bounds are a maximum envelope, not an XYZ stretch target; use uniform scale plus a visible fit axis (`contain`, `x`, `y`, or `z`) and reject non-uniform scale.
+- Resolve normalization defaults from `configs/asset-profiles/*.json`. Wall-mounted windows and mirrors are `wall` sub-profiles (`window_wall`, `wall_mirror`), not new top-level required profiles.
 - For characters, create attachment manifests early. Equipment positions belong to explicit bone-local sockets that can be adjusted and revalidated, not to guessed mesh names or one-off Unity hierarchy searches.
 - Keep seeds fixed by default for stable texture continuity between repeated runs. Use `--increment-seed` only when variation is explicitly desired.
 - Use `postprocess_generation.py` after generation even when ComfyUI succeeds; the generated file alone is not the finished deliverable.

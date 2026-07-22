@@ -1,8 +1,8 @@
 # Contributing / Contribution
 
-This repository is maintained by a single developer and is currently a prototype. Contributions are welcome, but review can be slow and there is no promise of stability, support window, roadmap delivery or installer reliability.
+This repository is maintained by a single developer and is an experimental prototype, not broadly tested across machines. Contributions are welcome, but review can be slow and there is no guarantee of any kind, including stability, support window, roadmap delivery or installer reliability.
 
-Ce depot est maintenu par un seul developpeur et reste un prototype. Les contributions sont bienvenues, mais la revue peut etre lente et il n'y a aucune promesse de stabilite, de delai de support, de roadmap tenue ou de fiabilite des installeurs.
+Ce depot est maintenu par un seul developpeur et reste un prototype experimental, globalement non teste sur la diversite des machines. Les contributions sont bienvenues, mais la revue peut etre lente et il n'y a aucune garantie, notamment aucune promesse de stabilite, de delai de support, de roadmap tenue ou de fiabilite des installeurs.
 
 ## What Helps
 
@@ -80,8 +80,8 @@ Comme ce projet est actuellement sans licence open source, une licence formelle 
 
 ## Review Expectations
 
-This is a solo-maintained prototype. A PR may be delayed, closed, split, rewritten, or rejected if it increases maintenance cost, adds unclear external dependencies, weakens safety checks, or does not match the current direction.
+This is a solo-maintained experimental prototype. A PR may be delayed, closed, split, rewritten, or rejected if it increases maintenance cost, adds unclear external dependencies, weakens safety checks, or does not match the current direction.
 
 ## Attentes de revue
 
-Ce projet est un prototype maintenu par une seule personne. Une PR peut etre retardee, fermee, decoupee, reecrite ou refusee si elle augmente trop la maintenance, ajoute des dependances externes peu claires, affaiblit les controles de securite ou ne correspond pas a la direction actuelle.
+Ce projet est un prototype experimental maintenu par une seule personne. Une PR peut etre retardee, fermee, decoupee, reecrite ou refusee si elle augmente trop la maintenance, ajoute des dependances externes peu claires, affaiblit les controles de securite ou ne correspond pas a la direction actuelle.

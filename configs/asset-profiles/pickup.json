@@ -47,6 +47,13 @@
     "y": 0.45,
     "z": 0.45
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "contain"
+  },
   "faceBudget": 5000,
   "aliases": [
     "pickup",

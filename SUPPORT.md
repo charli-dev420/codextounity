@@ -1,8 +1,8 @@
 # Support / Support
 
-This is a solo-maintained prototype. Support is best effort only. There is no service-level agreement, no guaranteed response time and no guarantee that installers or GPU workflows work on every machine.
+This is a solo-maintained experimental prototype that is not broadly tested across machines. Support is best effort only. There is no service-level agreement, no guaranteed response time and no guarantee of any kind, including that installers or GPU workflows work on any given machine.
 
-Ce projet est un prototype maintenu par un seul developpeur. Le support est fait au mieux. Il n'y a pas de SLA, pas de delai de reponse garanti et aucune garantie que les installeurs ou workflows GPU fonctionnent sur toutes les machines.
+Ce projet est un prototype experimental maintenu par un seul developpeur, globalement non teste sur la diversite des machines. Le support est fait au mieux. Il n'y a pas de SLA, pas de delai de reponse garanti et aucune garantie, notamment aucune garantie que les installeurs ou workflows GPU fonctionnent sur une machine donnee.
 
 ## Open An Issue For
 

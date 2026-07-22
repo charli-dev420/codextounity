@@ -2,7 +2,7 @@
 
 ## A lire d'abord
 
-Ce projet est un prototype. Il peut aider a generer et importer des assets, mais il ne remplace pas une verification humaine. Controlez les dimensions, le pivot, la rotation, la qualite du mesh, les textures et l'import Unity avant d'utiliser un asset dans un vrai projet.
+Ce projet est un prototype experimental, globalement non teste, sans aucune garantie. Il peut aider a generer et importer des assets, mais il ne remplace pas une verification humaine. Controlez les dimensions, le pivot, la rotation, la qualite du mesh, les textures et l'import Unity avant d'utiliser un asset dans un vrai projet.
 
 ## Role des pieces
 
@@ -15,11 +15,13 @@ Ce projet est un prototype. Il peut aider a generer et importer des assets, mais
 
 ## Premier parcours conseille
 
-1. Lancer l'installeur :
+1. Lancer l'installeur Windows :
 
 ```powershell
-.\bootstrap\start-ui.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
 ```
+
+Si l'executable n'a pas encore ete fourni comme artefact experimental, le construire depuis le depot avec `.\installer\windows\build-installer.ps1`.
 
 2. Cliquer `Preflight and plan`.
 3. Lire les composants manquants.
@@ -27,7 +29,8 @@ Ce projet est un prototype. Il peut aider a generer et importer des assets, mais
 5. Cliquer `Validate setup`.
 6. Redemarrer Codex.
 7. Ouvrir Asset Factory avec `open_asset_factory`.
-8. Faire un dry-run d'asset avant une generation reelle.
+8. Verifier que ComfyUI repond sur `http://127.0.0.1:8188`.
+9. Faire un dry-run d'asset avant une generation reelle.
 
 ## Ouvrir l'app Codex
 
@@ -58,6 +61,15 @@ Apres validation, redemarrer Codex. L'app expose :
 11. Lire `Status` pendant la generation.
 12. Ajuster le GLB si necessaire.
 13. Importer dans Unity.
+
+Succes minimum avant import Unity :
+
+- `job_status` indique `generated`, `adjusted` ou `unity_ready` ;
+- un artefact mesh existe dans le dossier de travail du job ;
+- `normalization_report.json` est valide si les bounds ont ete ajustes ;
+- `import_asset_to_unity` ecrit un manifest Unity et un chemin mesh pret pour Unity.
+
+Pour les details bas niveau TRELLIS2, voir `workflows/README_TRELLIS2_COMFYUI.md`.
 
 ## Conseils pour l'image de reference
 
@@ -91,16 +103,20 @@ Les dimensions finales ne doivent pas etre ecrites dans l'image. Elles sont impo
 
 Utiliser `adjust_generated_asset` quand l'asset est trop grand, trop petit, tourne mal ou a un mauvais pivot.
 
+La normalisation conserve les proportions. Les bounds cibles sont une enveloppe maximale, jamais une cible de stretch X/Y/Z. L'axe de fit vient du profil sauf override explicite : `terrain_piece`, `prop`, `pickup` et `equipment` utilisent `contain`, `wall` et `weapon` utilisent `x`, et `door` et `character` utilisent `y`. `window_wall` et `wall_mirror` sont des sous-profils muraux avec leurs propres bounds et axes. Le scale XYZ non uniforme est refuse car il deforme les meshes generes.
+
 Exemple de bounds pour un mur :
 
 ```text
 targetBounds = 4,2,0.35
+fitAxis = x
 pivot = bottom-center
 axisRemap = x,y,z
 rotateEuler = 0,0,0
+scale = 1
 ```
 
-Relire le `normalization_report.json` pour verifier les bounds avant/apres.
+Relire le `normalization_report.json` pour verifier les bounds avant/apres, `fitMode`, `fitAxis` et `proportionsPreserved`.
 
 ## Import Unity
 

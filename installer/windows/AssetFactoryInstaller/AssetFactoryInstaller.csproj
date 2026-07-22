@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net9.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>AssetFactoryInstaller</AssemblyName>
+    <RootNamespace>AssetFactoryInstaller</RootNamespace>
+    <Version>0.1.0</Version>
+    <Company>Codex Unity ComfyUI Pipeline</Company>
+    <Product>Asset Factory Installer</Product>
+    <Description>Windows graphical installer for the Codex Unity ComfyUI pipeline.</Description>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+</Project>

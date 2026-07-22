@@ -2,7 +2,7 @@
 
 ## Avertissement obligatoire
 
-Ce projet est un prototype maintenu par un seul developpeur. Il n'y a aucune promesse de stabilite, de disponibilite du support, de compatibilite machine ou de fiabilite des installeurs.
+Ce projet est un prototype experimental maintenu par un seul developpeur, globalement non teste sur la diversite des machines. Il n'y a aucune garantie, aucune promesse de stabilite, de disponibilite du support, de compatibilite machine ou de fiabilite des installeurs.
 
 Le mainteneur de ce plugin n'est pas proprietaire des outils externes utilises.
 

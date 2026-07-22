@@ -85,12 +85,17 @@
             <label>Asset name<input id="assetName" value="new_asset" /></label>
             <label>Profile<select id="profile"><option>wall</option><option>door</option><option>prop</option><option>weapon</option><option>pickup</option><option>character</option><option>equipment</option><option>terrain_piece</option></select></label>
           </div>
+          <label>Sub-profile<input id="subProfile" placeholder="window_wall, wall_mirror, or blank" /></label>
           <label>Description<textarea id="description">single clean game-ready asset</textarea></label>
           <label>Style<input id="style" value="stylized mobile game asset" /></label>
           <div class="grid3">
-            <label>Width<input id="targetWidth" type="number" step="0.01" value="4" /></label>
-            <label>Height<input id="targetHeight" type="number" step="0.01" value="2" /></label>
-            <label>Depth<input id="targetDepth" type="number" step="0.01" value="0.35" /></label>
+            <label>Max width<input id="targetWidth" type="number" step="0.01" value="4" /></label>
+            <label>Max height<input id="targetHeight" type="number" step="0.01" value="2" /></label>
+            <label>Max depth<input id="targetDepth" type="number" step="0.01" value="0.35" /></label>
+          </div>
+          <div class="grid2">
+            <label>Pivot<select id="pipelinePivot"><option>bottom-center</option><option>center</option><option>origin</option><option>custom</option><option>keep</option></select></label>
+            <label>Fit axis<select id="fitAxis"><option>auto</option><option>contain</option><option>x</option><option>y</option><option>z</option></select></label>
           </div>
           <div class="row"><button class="primary" data-call="plan_asset">Plan</button><button data-copy="plan">Copy plan</button></div>
         </div>
@@ -115,8 +120,18 @@
             <label>Views<input id="maxViews" type="number" value="4" /></label>
           </div>
           <div class="grid2">
-            <label>ComfyUI server<input id="comfyServer" value="http://127.0.0.1:8000" /></label>
+            <label>ComfyUI server<input id="comfyServer" value="http://127.0.0.1:8188" /></label>
             <label>Workflow<select id="workflow"><option>simple</option><option>low-poly</option><option>mesh-only-hq</option><option>mesh-with-texturing</option><option>mesh-with-texturing-hq</option></select></label>
+          </div>
+          <div class="grid3">
+            <label>Rotate XYZ<input id="pipelineRotateEuler" value="0,0,0" /></label>
+            <label>Uniform scale<input id="pipelineScale" value="1" /></label>
+            <label>Offset XYZ<input id="pipelineOffset" value="0,0,0" /></label>
+          </div>
+          <div class="grid3">
+            <label>Axis remap<input id="pipelineAxisRemap" value="x,y,z" /></label>
+            <label>Custom pivot<input id="pipelineCustomPivot" value="0,0,0" /></label>
+            <label>Tolerance<input id="pipelineTolerance" type="number" step="0.0005" value="0.002" /></label>
           </div>
           <div class="row"><button data-call="run_asset_pipeline" data-dry="1">Dry-run</button><button class="primary" data-call="start_asset_pipeline_job">Start job</button><button data-call="job_status">Status</button><button class="bad" data-call="cancel_pipeline_job">Cancel</button></div>
           <label>Job id<input id="jobId" placeholder="latest" /></label>
@@ -130,7 +145,7 @@
           <label>Output mesh<input id="outputMesh" placeholder="<WORK_DIR>\adjusted.glb" /></label>
           <div class="grid3">
             <label>Rotate XYZ<input id="rotateEuler" value="0,0,0" /></label>
-            <label>Scale XYZ<input id="scale" value="1,1,1" /></label>
+            <label>Uniform scale<input id="scale" value="1" /></label>
             <label>Offset XYZ<input id="offset" value="0,0,0" /></label>
           </div>
           <div class="grid2">
@@ -138,10 +153,11 @@
             <label>Pivot<select id="pivot"><option>bottom-center</option><option>center</option><option>origin</option><option>custom</option><option>keep</option></select></label>
           </div>
           <div class="grid3">
+            <label>Fit axis<select id="adjustFitAxis"><option>contain</option><option>x</option><option>y</option><option>z</option></select></label>
             <label>Axis remap<input id="axisRemap" value="x,y,z" /></label>
             <label>Custom pivot<input id="customPivot" value="0,0,0" /></label>
-            <label>Tolerance<input id="tolerance" type="number" step="0.0005" value="0.002" /></label>
           </div>
+          <label>Tolerance<input id="tolerance" type="number" step="0.0005" value="0.002" /></label>
           <label>Report path<input id="report" /></label>
           <button class="primary" data-call="adjust_generated_asset">Adjust mesh</button>
         </div>
@@ -219,24 +235,28 @@
     function baseArgs() {
       return {
         assetName: $('assetName').value.trim(), profile: $('profile').value, description: $('description').value, style: $('style').value,
+        subProfile: $('subProfile').value.trim(),
         targetWidth: Number($('targetWidth').value), targetHeight: Number($('targetHeight').value), targetDepth: Number($('targetDepth').value),
         referenceImagePath: $('referenceImagePath').value.trim(), workDir: $('workDir').value.trim(), unityProject: $('unityProject').value.trim(),
-        comfyServer: $('comfyServer').value.trim(), workflow: $('workflow').value, targetFaces: Number($('targetFaces').value), textureSize: Number($('textureSize').value), maxViews: Number($('maxViews').value)
+        unitySubdir: $('unitySubdir').value.trim(), comfyServer: $('comfyServer').value.trim(), workflow: $('workflow').value, targetFaces: Number($('targetFaces').value), textureSize: Number($('textureSize').value), maxViews: Number($('maxViews').value),
+        pivot: $('pipelinePivot').value, fitAxis: $('fitAxis').value, rotateEuler: $('pipelineRotateEuler').value, scale: $('pipelineScale').value, offset: $('pipelineOffset').value,
+        axisRemap: $('pipelineAxisRemap').value, customPivot: $('pipelineCustomPivot').value, tolerance: Number($('pipelineTolerance').value)
       };
     }
 
     function argsFor(name, button) {
       const args = baseArgs();
       if (button?.dataset.dry) args.dryRun = true;
-      if (name === 'plan_reference_image') return { assetName: args.assetName, profile: args.profile, description: args.description, style: args.style, view: $('view').value, background: $('background').value };
+      if (name === 'plan_asset') return { workDir: args.workDir, assetName: args.assetName, profile: args.profile, subProfile: args.subProfile, description: args.description, style: args.style, targetWidth: args.targetWidth, targetHeight: args.targetHeight, targetDepth: args.targetDepth, fitAxis: args.fitAxis };
+      if (name === 'plan_reference_image') return { assetName: args.assetName, profile: args.profile, subProfile: args.subProfile, description: args.description, style: args.style, view: $('view').value, background: $('background').value };
       if (name === 'register_reference_image') return { workDir: args.workDir, assetName: args.assetName, imagePath: args.referenceImagePath, source: 'manual', prompt: args.description };
       if (name === 'validate_reference_image') return { imagePath: args.referenceImagePath, profile: args.profile, expectedObject: args.assetName };
       if (name === 'job_status') return { workDir: args.workDir, jobId: $('jobId').value.trim() || 'latest', includeLogs: true };
       if (name === 'add_pipeline_instruction') return { workDir: args.workDir, jobId: $('jobId').value.trim() || 'latest', instruction: $('instruction').value, author: 'manual' };
       if (name === 'cancel_pipeline_job') return { workDir: args.workDir, jobId: $('jobId').value.trim() || 'latest' };
-      if (name === 'adjust_generated_asset') return { inputMesh: $('inputMesh').value.trim(), outputMesh: $('outputMesh').value.trim(), rotateEuler: $('rotateEuler').value, scale: $('scale').value, offset: $('offset').value, targetBounds: $('targetBounds').value, pivot: $('pivot').value, axisRemap: $('axisRemap').value, customPivot: $('customPivot').value, tolerance: Number($('tolerance').value), report: $('report').value.trim() };
+      if (name === 'adjust_generated_asset') return { inputMesh: $('inputMesh').value.trim(), outputMesh: $('outputMesh').value.trim(), profile: args.profile, subProfile: args.subProfile, rotateEuler: $('rotateEuler').value, scale: $('scale').value, offset: $('offset').value, targetBounds: $('targetBounds').value, fitAxis: $('adjustFitAxis').value, pivot: $('pivot').value, axisRemap: $('axisRemap').value, customPivot: $('customPivot').value, tolerance: Number($('tolerance').value), report: $('report').value.trim() };
       if (name === 'install_unity_template') return { unityProject: args.unityProject, force: true };
-      if (name === 'import_asset_to_unity') return { meshPath: $('outputMesh').value.trim() || $('inputMesh').value.trim(), unityProject: args.unityProject, assetId: args.assetName, referenceImagePath: args.referenceImagePath, unitySubdir: $('unitySubdir').value, normalizationReport: $('report').value.trim(), characterAttachments: $('manifestPath').value.trim() };
+      if (name === 'import_asset_to_unity') return { meshPath: $('outputMesh').value.trim() || $('inputMesh').value.trim(), unityProject: args.unityProject, assetId: args.assetName, referenceImagePath: args.referenceImagePath, unitySubdir: args.unitySubdir, normalizationReport: $('report').value.trim(), characterAttachments: $('manifestPath').value.trim() };
       if (name === 'plan_character_attachments') return { characterId: $('characterId').value.trim(), rigName: 'Humanoid', equipmentKinds: [$('equipmentCategory').value], animationUse: $('previewPose').value };
       if (name === 'create_character_attachment_manifest') return { characterId: $('characterId').value.trim(), rigName: 'Humanoid', outPath: $('manifestPath').value.trim(), notes: $('slotNotes').value };
       if (name === 'update_character_attachment_slot') return { manifestPath: $('manifestPath').value.trim(), slotId: $('slotId').value.trim(), bone: $('bone').value.trim(), position: $('slotPosition').value, rotationEuler: $('slotRotation').value, scale: $('slotScale').value, equipmentCategory: $('equipmentCategory').value, previewPose: $('previewPose').value, notes: $('slotNotes').value };
@@ -275,10 +295,31 @@
       if (data?.exitCode === 0) nextChips.push(['ok', 'exit 0']);
       if (!nextChips.length) nextChips.push(['ok', 'ready']);
       chips.innerHTML = nextChips.map(([kind, text]) => '<span class="chip ' + kind + '">' + escapeHtml(text) + '</span>').join('');
+      applyProfilePlan(data);
       const rows = data?.artifacts || data?.structuredContent?.artifacts || [];
       if (Array.isArray(rows) && rows.length) {
         artifacts.innerHTML = rows.slice(0, 20).map((item) => '<tr><td>' + escapeHtml(item.kind || '') + '</td><td class="mono">' + escapeHtml(item.path || '') + '</td><td>' + escapeHtml(String(item.bytes || '')) + '</td></tr>').join('');
       }
+    }
+
+    function applyProfilePlan(data) {
+      if (data?.targetBounds) {
+        $('targetWidth').value = data.targetBounds.width ?? $('targetWidth').value;
+        $('targetHeight').value = data.targetBounds.height ?? $('targetHeight').value;
+        $('targetDepth').value = data.targetBounds.depth ?? $('targetDepth').value;
+        $('targetBounds').value = [data.targetBounds.width, data.targetBounds.height, data.targetBounds.depth].filter((v) => v !== undefined).join(',');
+      }
+      if (data?.subProfile) $('subProfile').value = data.subProfile;
+      if (data?.normalizationControls) {
+        $('pipelinePivot').value = data.normalizationControls.pivot || $('pipelinePivot').value;
+        $('fitAxis').value = data.normalizationControls.fitAxis || $('fitAxis').value;
+        $('pipelineAxisRemap').value = data.normalizationControls.axisRemap || $('pipelineAxisRemap').value;
+        $('pipelineScale').value = data.normalizationControls.uniformScale || $('pipelineScale').value;
+        $('pipelineTolerance').value = data.normalizationControls.tolerance ?? $('pipelineTolerance').value;
+      }
+      if (data?.faceBudget) $('targetFaces').value = data.faceBudget;
+      if (data?.textureSize) $('textureSize').value = data.textureSize;
+      if (data?.importDefaults?.unitySubdir) $('unitySubdir').value = data.importDefaults.unitySubdir;
     }
 
     function updatePreview() {

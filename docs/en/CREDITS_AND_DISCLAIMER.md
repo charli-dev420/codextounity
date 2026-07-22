@@ -2,7 +2,7 @@
 
 ## Mandatory Disclaimer
 
-This project is a prototype maintained by a single developer. There is no promise of stability, support availability, machine compatibility or installer reliability.
+This project is an experimental prototype maintained by a single developer and is not broadly tested across machines. There is no guarantee of any kind, including stability, support availability, machine compatibility or installer reliability.
 
 The maintainer of this plugin does not own the external tools used by this project.
 

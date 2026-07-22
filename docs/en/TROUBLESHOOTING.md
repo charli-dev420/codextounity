@@ -19,11 +19,22 @@ Base verification command:
 
 Symptoms:
 
-- the browser window does not open;
-- PowerShell blocks script execution;
+- `AssetFactoryInstaller.exe` does not start;
+- the executable cannot find `bootstrap\install.ps1`;
+- the executable has not been built yet;
+- the fallback browser window does not open;
+- PowerShell blocks the fallback script;
 - the local port seems already used.
 
 Actions:
+
+```powershell
+.\installer\windows\build-installer.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe --validate-launcher --plugin-root <PLUGIN_ROOT>
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
+```
+
+Developer fallback:
 
 ```powershell
 .\bootstrap\start-ui.ps1 -NoBrowser
@@ -106,6 +117,15 @@ Typical command:
 ```powershell
 .\scripts\run_trellis2_assets.ps1 -InputDir "<WORK_DIR>\references" -OutputDir "<WORK_DIR>\out" -DryRun -Limit 1
 ```
+
+If using Docker, start the service and verify port `8188`:
+
+```bash
+docker compose -f docker/compose.yaml up asset-factory-comfyui
+docker compose -f docker/compose.yaml logs -f asset-factory-comfyui
+```
+
+If Docker prints an access warning for its local config file, fix the local Docker Desktop/config permissions first; that is a machine issue, not a plugin code failure.
 
 ## TRELLIS2 Does Not Return a GLB
 

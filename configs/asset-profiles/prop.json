@@ -48,6 +48,13 @@
     "y": 1.0,
     "z": 1.0
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "contain"
+  },
   "faceBudget": 9000,
   "aliases": [
     "prop",

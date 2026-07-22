@@ -25,6 +25,16 @@ namespace AIAssetFactory.EditorTools
             ImportManifest(path, false);
         }
 
+        public static UnityEngine.Object ImportManifestForAutomation(string path)
+        {
+            return ImportManifestForAutomation(path, false);
+        }
+
+        public static UnityEngine.Object ImportManifestForAutomation(string path, bool addToScene)
+        {
+            return ImportManifestInternal(path, addToScene, true);
+        }
+
         [MenuItem(AIAssetConstants.MenuRoot + "/Import Result And Add To Scene")]
         public static void ImportAndAddToScene()
         {
@@ -51,10 +61,15 @@ namespace AIAssetFactory.EditorTools
 
         public static void ImportManifest(string path, bool addToScene)
         {
+            ImportManifestInternal(path, addToScene, false);
+        }
+
+        private static UnityEngine.Object ImportManifestInternal(string path, bool addToScene, bool automationMode)
+        {
             if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
             {
                 Debug.LogError($"[AIAssetFactory] Manifest not found: {path}");
-                return;
+                return null;
             }
 
             var text = File.ReadAllText(path);
@@ -62,10 +77,17 @@ namespace AIAssetFactory.EditorTools
             string meshPath = null;
             if (manifest != null)
             {
-                if (ManifestNeedsReview(manifest) && !ConfirmImportWithValidationIssues(manifest))
+                if (ManifestNeedsReview(manifest))
                 {
-                    Debug.LogWarning($"[AIAssetFactory] Import cancelled for manifest with validation issues: {path}");
-                    return;
+                    if (automationMode)
+                    {
+                        Debug.LogWarning($"[AIAssetFactory] Automation import continues with validation issues: {path}");
+                    }
+                    else if (!ConfirmImportWithValidationIssues(manifest))
+                    {
+                        Debug.LogWarning($"[AIAssetFactory] Import cancelled for manifest with validation issues: {path}");
+                        return null;
+                    }
                 }
 
                 meshPath = !string.IsNullOrWhiteSpace(manifest.generatedMesh) ? manifest.generatedMesh : manifest.unityReadyMesh;
@@ -95,15 +117,18 @@ namespace AIAssetFactory.EditorTools
             if (string.IsNullOrWhiteSpace(meshPath))
             {
                 Debug.LogWarning($"[AIAssetFactory] No mesh path found in manifest: {path}");
-                return;
+                return null;
             }
 
             var unityPath = ConvertToUnityPath(meshPath);
             if (string.IsNullOrWhiteSpace(unityPath))
             {
                 Debug.LogWarning($"[AIAssetFactory] Manifest path not inside project: {meshPath}");
-                EditorUtility.RevealInFinder(path);
-                return;
+                if (!automationMode)
+                {
+                    EditorUtility.RevealInFinder(path);
+                }
+                return null;
             }
 
             var assetDir = Path.GetDirectoryName(unityPath);
@@ -116,7 +141,10 @@ namespace AIAssetFactory.EditorTools
                 AssetDatabase.ImportAsset(unityPath, ImportAssetOptions.ForceUpdate);
             }
 
-            var imported = AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(unityPath);
+            var importedGameObject = AssetDatabase.LoadAssetAtPath<GameObject>(unityPath);
+            var imported = importedGameObject != null
+                ? importedGameObject
+                : AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(unityPath);
             if (imported != null)
             {
                 var selected = CreatePrefabAssetIfPossible(imported, unityPath, manifest) ?? imported;
@@ -130,10 +158,12 @@ namespace AIAssetFactory.EditorTools
                     EditorGUIUtility.PingObject(selected);
                 }
                 Debug.Log($"[AIAssetFactory] Imported asset: {unityPath}");
+                return selected;
             }
             else
             {
                 Debug.LogWarning($"[AIAssetFactory] Mesh file not found in Asset DB: {unityPath}");
+                return null;
             }
         }
 

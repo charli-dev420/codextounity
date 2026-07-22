@@ -54,6 +54,7 @@ DROP_UI_NODE_CLASSES = {
 }
 
 MESH_EXTENSIONS = (".glb", ".gltf", ".obj", ".mtl", ".png", ".jpg", ".jpeg", ".webp", ".ply", ".stl", ".fbx", ".dae", ".3mf")
+EXPORT_MESH_EXTENSIONS = (".glb", ".gltf", ".obj", ".ply", ".stl", ".fbx", ".dae", ".3mf")
 
 WIDGET_PRIMITIVE_TYPES = {
     "INT",
@@ -584,6 +585,109 @@ def copy_prefixed_outputs(comfy_output_dir: Path, filename_prefix: str, output_d
     return copied
 
 
+def target_mesh_paths(paths: list[Path], file_format: str) -> list[Path]:
+    target_suffix = "." + file_format.lower().lstrip(".")
+    if target_suffix not in EXPORT_MESH_EXTENSIONS:
+        return []
+    return [path for path in paths if path.suffix.lower() == target_suffix]
+
+
+def non_empty_existing(paths: list[Path]) -> list[Path]:
+    found: list[Path] = []
+    for path in paths:
+        try:
+            if path.is_file() and path.stat().st_size > 0:
+                found.append(path)
+        except OSError:
+            continue
+    return found
+
+
+def empty_existing(paths: list[Path]) -> list[Path]:
+    found: list[Path] = []
+    for path in paths:
+        try:
+            if path.is_file() and path.stat().st_size <= 0:
+                found.append(path)
+        except OSError:
+            continue
+    return found
+
+
+def raw_target_refs(raw_files: list[dict[str, str]], file_format: str) -> list[dict[str, str]]:
+    target_suffix = "." + file_format.lower().lstrip(".")
+    refs: list[dict[str, str]] = []
+    for item in raw_files:
+        filename = str(item.get("filename") or item.get("path") or "")
+        if filename.lower().endswith(target_suffix):
+            refs.append(item)
+    return refs
+
+
+def classify_output_status(
+    raw_files: list[dict[str, str]],
+    downloaded: list[Path],
+    copied: list[Path],
+    file_format: str,
+    comfy_output_dir: Path | None,
+) -> dict[str, Any]:
+    downloaded_targets = target_mesh_paths(downloaded, file_format)
+    copied_targets = target_mesh_paths(copied, file_format)
+    usable_downloaded = non_empty_existing(downloaded_targets)
+    usable_copied = non_empty_existing(copied_targets)
+    usable_meshes = usable_downloaded + [path for path in usable_copied if path not in usable_downloaded]
+    output_sources: list[str] = []
+    if usable_downloaded:
+        output_sources.append("history_download")
+    if usable_copied:
+        output_sources.append("comfy_output_copy")
+
+    problems: list[str] = []
+    target_refs = raw_target_refs(raw_files, file_format)
+    if not raw_files:
+        problems.append("history_without_files")
+    elif not target_refs and not downloaded_targets and not copied_targets:
+        problems.append("output_missing")
+
+    if empty_existing(downloaded_targets):
+        problems.append("download_empty")
+    if empty_existing(copied_targets):
+        problems.append("empty_mesh_file")
+    if target_refs and not downloaded_targets and not copied_targets:
+        problems.append("missing_local_output")
+    if target_refs and comfy_output_dir is None and not usable_meshes:
+        problems.append("missing_comfy_output_dir")
+
+    status = "generated" if usable_meshes else "failed"
+    return {
+        "status": status,
+        "output_source": output_sources,
+        "output_problem": sorted(set(problems)),
+        "generated_meshes": [str(path) for path in usable_meshes],
+        "downloaded_target_meshes": [str(path) for path in downloaded_targets],
+        "copied_target_meshes": [str(path) for path in copied_targets],
+    }
+
+
+def infer_comfy_output_dir(system_stats: Any) -> Path | None:
+    if not isinstance(system_stats, dict):
+        return None
+    system = system_stats.get("system")
+    if not isinstance(system, dict):
+        return None
+    argv = system.get("argv")
+    if isinstance(argv, list):
+        for index, value in enumerate(argv):
+            text = str(value)
+            if text == "--output-directory" and index + 1 < len(argv):
+                candidate = Path(str(argv[index + 1])).expanduser()
+                return candidate if candidate.exists() else None
+            if text.startswith("--output-directory="):
+                candidate = Path(text.split("=", 1)[1]).expanduser()
+                return candidate if candidate.exists() else None
+    return None
+
+
 def discover_inputs(input_dir: Path, pattern: str, recursive: bool) -> list[Path]:
     iterator = input_dir.rglob(pattern) if recursive else input_dir.glob(pattern)
     return sorted(path for path in iterator if path.is_file() and path.suffix.lower() in {".png", ".jpg", ".jpeg", ".webp"})
@@ -608,8 +712,10 @@ def ensure_workflow(args: argparse.Namespace) -> Path:
     key = args.official_workflow
     workflow_info = OFFICIAL_WORKFLOWS[key]
     workflow_dir = Path(args.workflow_dir).resolve()
-    workflow_dir.mkdir(parents=True, exist_ok=True)
     local_path = workflow_dir / workflow_info["filename"]
+    if args.dry_run:
+        return local_path
+    workflow_dir.mkdir(parents=True, exist_ok=True)
     if not local_path.exists() or args.refresh_workflow:
         url = workflow_info["url"]
         if not url:
@@ -671,7 +777,6 @@ def run_batch(args: argparse.Namespace) -> int:
     server = normalize_server(args.server)
     input_dir = Path(args.input_dir).resolve()
     output_dir = Path(args.output_dir).resolve()
-    output_dir.mkdir(parents=True, exist_ok=True)
     inputs = discover_inputs(input_dir, args.pattern, args.recursive)
     workflow_path = ensure_workflow(args)
     selected_inputs, group_start, group_end = select_input_group(inputs, args.group_size, args.group_index, args.limit)
@@ -721,12 +826,17 @@ def run_batch(args: argparse.Namespace) -> int:
             print(f"DRY {path.name} -> {args.prefix}/{safe_name(path.stem)}.{args.file_format}")
         return 0
 
+    output_dir.mkdir(parents=True, exist_ok=True)
     base_workflow = load_workflow(workflow_path)
 
-    http_json(server, "/system_stats", timeout=30)
+    system_stats = http_json(server, "/system_stats", timeout=30)
+    comfy_output_dir = Path(args.comfy_output_dir).resolve() if args.comfy_output_dir else infer_comfy_output_dir(system_stats)
+    if comfy_output_dir:
+        print(f"Comfy local output copy: {comfy_output_dir}")
     object_info = http_json(server, "/object_info", timeout=60) if is_ui_workflow(base_workflow) else None
     client_id = args.client_id or str(uuid.uuid4())
     manifest: list[dict[str, Any]] = []
+    failed_assets: list[str] = []
 
     for local_index, image_path in enumerate(selected_inputs, start=1):
         index = group_start + local_index
@@ -751,8 +861,9 @@ def run_batch(args: argparse.Namespace) -> int:
         raw_files = walk_outputs(history.get("outputs", history))
         downloaded = download_history_files(server, raw_files, output_dir) if args.download_outputs else []
         copied: list[Path] = []
-        if args.comfy_output_dir:
-            copied = copy_prefixed_outputs(Path(args.comfy_output_dir).resolve(), filename_prefix, output_dir, started_at)
+        if comfy_output_dir:
+            copied = copy_prefixed_outputs(comfy_output_dir, filename_prefix, output_dir, started_at)
+        output_status = classify_output_status(raw_files, downloaded, copied, args.file_format, comfy_output_dir)
 
         job = {
             "source": str(image_path),
@@ -764,14 +875,35 @@ def run_batch(args: argparse.Namespace) -> int:
             "raw_outputs": raw_files,
             "downloaded": [str(path) for path in downloaded],
             "copied": [str(path) for path in copied],
+            "status": output_status["status"],
+            "output_source": output_status["output_source"],
+            "output_problem": output_status["output_problem"],
+            "generated_meshes": output_status["generated_meshes"],
+            "downloaded_target_meshes": output_status["downloaded_target_meshes"],
+            "copied_target_meshes": output_status["copied_target_meshes"],
         }
         manifest.append(job)
         (output_dir / f"{asset_name}.history.json").write_text(json.dumps(job, indent=2, ensure_ascii=False), encoding="utf-8")
-        print(f"[group {args.group_index} {local_index}/{len(selected_inputs)}] done, files found: {len(downloaded) + len(copied)}")
+        if output_status["status"] != "generated":
+            failed_assets.append(asset_name)
+            problems = ", ".join(output_status["output_problem"]) or "output_missing"
+            print(
+                f"[group {args.group_index} {local_index}/{len(selected_inputs)}] ERROR no non-empty .{args.file_format} output: {problems}",
+                file=sys.stderr,
+            )
+        else:
+            sources = ", ".join(output_status["output_source"]) or "unknown"
+            print(
+                f"[group {args.group_index} {local_index}/{len(selected_inputs)}] done, "
+                f"mesh files: {len(output_status['generated_meshes'])}, source: {sources}"
+            )
 
     manifest_path = output_dir / f"manifest_trellis2_batch_group_{args.group_index:02d}.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"Wrote manifest: {manifest_path}")
+    if failed_assets:
+        print(f"ERROR: missing non-empty .{args.file_format} output for: {', '.join(failed_assets)}", file=sys.stderr)
+        return 2
     return 0
 
 

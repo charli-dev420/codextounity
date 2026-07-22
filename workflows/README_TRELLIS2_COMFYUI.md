@@ -6,6 +6,10 @@ Default workflow:
 
 - `trellis2_simple.api.json`: API workflow based on the supplied `Simple.json`.
 
+Optional reference-image workflow:
+
+- `flux1-dev-nvfp4-reference-image.api.json`: experimental ComfyUI API workflow for generating a single-object asset reference image with Flux NVFP4 before TRELLIS2. It expects local `flux1-dev-nvfp4.safetensors`, `ae.safetensors`, `clip_l.safetensors`, `t5xxl_fp8_e4m3fn_scaled.safetensors`, and nodes compatible with `CLIPTextEncodeFlux`. It is provided as a convenience template, not as proof that the local machine has the model files or nodes.
+
 Mobile/stability defaults:
 
 - fixed seed `2146628683`;
@@ -45,6 +49,7 @@ ComfyUI prerequisites remain local:
 - ComfyUI reachable, normally `http://127.0.0.1:8188`.
 - `visualbruno/ComfyUI-Trellis2` custom nodes installed.
 - Required TRELLIS2/DINO model files present in the local ComfyUI models directory.
+- Required Flux NVFP4 model files present if using the optional reference-image workflow.
 
 After generation, run Codex-side post-processing:
 

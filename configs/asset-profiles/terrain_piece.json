@@ -49,6 +49,13 @@
     "y": 0.4,
     "z": 4.0
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "contain"
+  },
   "faceBudget": 14000,
   "aliases": [
     "terrain",

@@ -195,5 +195,5 @@ if ($RefreshWorkflow) {
   $ArgsList += "--refresh-workflow"
 }
 
-python @ArgsList
+python -B @ArgsList
 exit $LASTEXITCODE

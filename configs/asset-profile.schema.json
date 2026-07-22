@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Codex Asset Profile",
   "type": "object",
-  "required": ["schema", "profileId", "displayName", "profileType", "aliases", "promptRules", "negativePromptRules", "targetBounds", "faceBudget", "textureSize", "pivotMode", "unityCategory", "generationDefaults", "importDefaults", "validationRules"],
+  "required": ["schema", "profileId", "displayName", "profileType", "aliases", "promptRules", "negativePromptRules", "targetBounds", "normalizationDefaults", "faceBudget", "textureSize", "pivotMode", "unityCategory", "generationDefaults", "importDefaults", "validationRules"],
   "properties": {
     "schema": { "const": "codex.assetProfile.v1" },
     "profileId": { "type": "string", "pattern": "^[a-z0-9_]+$" },
@@ -15,6 +15,36 @@
       "type": "object",
       "required": ["x", "y", "z"],
       "properties": { "x": { "type": "number", "exclusiveMinimum": 0 }, "y": { "type": "number", "exclusiveMinimum": 0 }, "z": { "type": "number", "exclusiveMinimum": 0 } }
+    },
+    "normalizationDefaults": {
+      "type": "object",
+      "required": ["fitMode", "targetBoundsMode", "allowNonUniformScale", "scale", "fitAxis"],
+      "properties": {
+        "fitMode": { "const": "preserve-aspect" },
+        "targetBoundsMode": { "const": "max-envelope" },
+        "allowNonUniformScale": { "const": false },
+        "scale": { "type": "number" },
+        "fitAxis": { "type": "string", "enum": ["contain", "x", "y", "z"] }
+      }
+    },
+    "subProfiles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["displayName", "aliases", "targetBounds", "normalizationDefaults"],
+        "properties": {
+          "displayName": { "type": "string", "minLength": 1 },
+          "role": { "type": "string" },
+          "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1 },
+          "targetBounds": {
+            "type": "object",
+            "required": ["x", "y", "z"],
+            "properties": { "x": { "type": "number", "exclusiveMinimum": 0 }, "y": { "type": "number", "exclusiveMinimum": 0 }, "z": { "type": "number", "exclusiveMinimum": 0 } }
+          },
+          "unityCategory": { "type": "string" },
+          "normalizationDefaults": { "$ref": "#/properties/normalizationDefaults" }
+        }
+      }
     },
     "faceBudget": { "type": "integer", "minimum": 100, "maximum": 100000 },
     "textureSize": { "type": "integer", "enum": [256, 512, 1024, 2048] },

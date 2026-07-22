@@ -16,12 +16,12 @@ from normalize_wall_glbs import (
     read_accessor,
     save_glb,
     transform_points,
-    validate_rows,
     vector_to_text,
     write_accessor,
 )
 
 AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
+FIT_AXIS_INDEX = {"x": 0, "y": 1, "z": 2}
 
 
 def rotation_matrix_xyz(rx: float, ry: float, rz: float) -> np.ndarray:
@@ -44,6 +44,13 @@ def parse_vec3(value: str, default: tuple[float, float, float]) -> np.ndarray:
     if len(parts) != 3:
         raise ValueError(f"Expected one value or three comma-separated numbers, got {value!r}")
     return np.array(parts, dtype=np.float64)
+
+
+def parse_uniform_scale(value: str) -> float:
+    parts = parse_vec3(value, (1, 1, 1))
+    if not np.allclose(parts, parts[0], atol=1e-8):
+        raise ValueError("Non-uniform scale would deform the asset; use one uniform scale value.")
+    return float(parts[0])
 
 
 def axis_remap_matrix(value: str) -> np.ndarray:
@@ -106,14 +113,69 @@ def normalize_normals(values: np.ndarray, linear: np.ndarray) -> np.ndarray:
     return (adjusted / safe[:, None]).astype(np.float32)
 
 
+def choose_uniform_target_scale(extent: np.ndarray, target_bounds: np.ndarray, fit_axis: str) -> float:
+    safe_extent = np.where(np.abs(extent) > 1e-8, extent, np.nan)
+    ratios = target_bounds / safe_extent
+    if np.any(~np.isfinite(ratios)) or np.any(ratios <= 0):
+        raise ValueError("Cannot compute a proportion-preserving target scale from empty or invalid bounds.")
+    if fit_axis in FIT_AXIS_INDEX:
+        return float(ratios[FIT_AXIS_INDEX[fit_axis]])
+    return float(np.min(ratios))
+
+
+def validate_normalized_bounds(
+    after: Any,
+    target_bounds: np.ndarray | None,
+    fit_axis: str,
+    pivot_mode: str,
+    tolerance: float,
+) -> list[str]:
+    errors: list[str] = []
+    extent = after.extent
+    minimum = after.minimum
+    maximum = after.maximum
+    center = (minimum + maximum) * 0.5
+    if target_bounds is not None:
+        overflow = extent - target_bounds
+        for index, axis in enumerate(("x", "y", "z")):
+            if overflow[index] > tolerance:
+                errors.append(
+                    f"preserve-aspect overflow: {axis} extent {extent[index]:.6f} exceeds target envelope {target_bounds[index]:.6f}"
+                )
+        if fit_axis in FIT_AXIS_INDEX:
+            index = FIT_AXIS_INDEX[fit_axis]
+            if abs(extent[index] - target_bounds[index]) > tolerance:
+                errors.append(
+                    f"fit-axis {fit_axis} extent {extent[index]:.6f} does not match target {target_bounds[index]:.6f}"
+                )
+        else:
+            touches = np.abs(extent - target_bounds) <= tolerance
+            if not bool(np.any(touches)):
+                errors.append("contain fit did not reach any target envelope axis")
+
+    if pivot_mode == "bottom-center":
+        if abs(float(minimum[1])) > tolerance:
+            errors.append(f"bottom-center pivot expects min Y at 0, got {minimum[1]:.6f}")
+        if abs(float(center[0])) > tolerance or abs(float(center[2])) > tolerance:
+            errors.append(f"bottom-center pivot expects X/Z centered on origin, got {center.tolist()}")
+    elif pivot_mode == "center":
+        if any(abs(float(value)) > tolerance for value in center):
+            errors.append(f"center pivot expects bounds centered on origin, got {center.tolist()}")
+    elif pivot_mode == "origin":
+        if any(abs(float(value)) > tolerance for value in minimum):
+            errors.append(f"origin pivot expects min bounds at origin, got {minimum.tolist()}")
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Adjust a GLB after generation: axis remap, rotation, scale, pivot, offset, and target bounds.")
     parser.add_argument("--input", required=True)
     parser.add_argument("--output", required=True)
     parser.add_argument("--rotate-euler", default="0,0,0", help="Degrees XYZ, e.g. 0,90,0.")
-    parser.add_argument("--scale", default="1,1,1", help="Uniform scalar or XYZ scale.")
+    parser.add_argument("--scale", default="1", help="Uniform scale only. Non-uniform XYZ scale is rejected because it deforms assets.")
     parser.add_argument("--offset", default="0,0,0", help="World offset XYZ after pivot placement.")
     parser.add_argument("--target-bounds", default="", help="Optional final XYZ bounds, e.g. 4,2,0.35.")
+    parser.add_argument("--fit-axis", choices=["contain", "x", "y", "z"], default="contain", help="Uniform fit rule for target bounds. 'contain' fits inside all bounds; x/y/z matches one axis and rejects overflow.")
     parser.add_argument("--pivot", choices=["bottom-center", "center", "origin", "custom", "keep"], default="bottom-center")
     parser.add_argument("--custom-pivot", default="0,0,0", help="Pivot XYZ used when --pivot custom.")
     parser.add_argument("--axis-remap", default="x,y,z", help="Axis remap, e.g. x,y,z, x,z,-y, -x,y,z.")
@@ -128,7 +190,7 @@ def main() -> int:
 
     axis = axis_remap_matrix(args.axis_remap)
     rotation = rotation_matrix_xyz(*parse_vec3(args.rotate_euler, (0, 0, 0)).tolist())
-    user_scale = np.diag(parse_vec3(args.scale, (1, 1, 1)))
+    user_scale = np.eye(3, dtype=np.float64) * parse_uniform_scale(args.scale)
     linear = rotation @ user_scale @ axis
     offset = parse_vec3(args.offset, (0, 0, 0))
     custom_pivot = parse_vec3(args.custom_pivot, (0, 0, 0))
@@ -159,9 +221,9 @@ def main() -> int:
     target_bounds = parse_vec3(args.target_bounds, (0, 0, 0)) if args.target_bounds else None
     target_scale = np.ones(3, dtype=np.float64)
     if target_bounds is not None:
-        safe_extent = np.where(np.abs(extent) > 1e-8, extent, 1.0)
-        target_scale = target_bounds / safe_extent
-        scale_matrix = np.diag(target_scale)
+        uniform_scale = choose_uniform_target_scale(extent, target_bounds, args.fit_axis)
+        target_scale = np.array([uniform_scale, uniform_scale, uniform_scale], dtype=np.float64)
+        scale_matrix = np.eye(3, dtype=np.float64) * uniform_scale
         linear = scale_matrix @ linear
         position_cache = {index: values @ scale_matrix.T for index, values in position_cache.items()}
         transformed_arrays = list(position_cache.values())
@@ -183,15 +245,7 @@ def main() -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     save_glb(output, gltf, bin_chunk)
     after = compute_world_bounds(gltf, bin_chunk, collect_world_matrices(gltf))
-    row = {
-        "output": str(output),
-        "output_min": vector_to_text(after.minimum),
-        "output_extent": vector_to_text(after.extent),
-        "target_width": float(target_bounds[0]) if target_bounds is not None else float(after.extent[0]),
-        "target_height": float(target_bounds[1]) if target_bounds is not None else float(after.extent[1]),
-        "target_thickness": float(target_bounds[2]) if target_bounds is not None else float(after.extent[2]),
-    }
-    errors = validate_rows([row], args.tolerance) if target_bounds is not None and args.pivot == "bottom-center" else []
+    errors = validate_normalized_bounds(after, target_bounds, args.fit_axis, args.pivot, args.tolerance)
     report = {
         "schema": "codex.normalizationReport.v2",
         "input": str(source.resolve()),
@@ -203,6 +257,9 @@ def main() -> int:
             "rotationEuler": args.rotate_euler,
             "scale": args.scale,
             "targetScaleApplied": [float(v) for v in target_scale.tolist()],
+            "fitMode": "preserve-aspect",
+            "fitAxis": args.fit_axis,
+            "proportionsPreserved": True,
             "offset": args.offset,
             "pivotMode": args.pivot,
             "customPivot": args.custom_pivot,

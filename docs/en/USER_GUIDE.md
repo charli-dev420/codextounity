@@ -2,7 +2,7 @@
 
 ## Read First
 
-This project is a prototype. It can help generate and import assets, but it does not replace human review. Check dimensions, pivot, rotation, mesh quality, textures and Unity import before using an asset in a real project.
+This project is an experimental prototype, not broadly tested, with no guarantee of any kind. It can help generate and import assets, but it does not replace human review. Check dimensions, pivot, rotation, mesh quality, textures and Unity import before using an asset in a real project.
 
 ## Roles
 
@@ -15,11 +15,13 @@ This project is a prototype. It can help generate and import assets, but it does
 
 ## First Recommended Flow
 
-1. Start the installer:
+1. Start the Windows installer:
 
 ```powershell
-.\bootstrap\start-ui.ps1
+.\installer\windows\dist\AssetFactoryInstaller-win-x64\AssetFactoryInstaller.exe
 ```
+
+If the executable has not been provided as an experimental artifact yet, build it from the repository with `.\installer\windows\build-installer.ps1`.
 
 2. Click `Preflight and plan`.
 3. Read missing components.
@@ -27,7 +29,8 @@ This project is a prototype. It can help generate and import assets, but it does
 5. Click `Validate setup`.
 6. Restart Codex.
 7. Open Asset Factory with `open_asset_factory`.
-8. Run an asset dry-run before real generation.
+8. Confirm ComfyUI is reachable at `http://127.0.0.1:8188`.
+9. Run an asset dry-run before real generation.
 
 ## Open the Codex App
 
@@ -58,6 +61,15 @@ After validation, restart Codex. The app exposes:
 11. Read `Status` during generation.
 12. Adjust the GLB when needed.
 13. Import into Unity.
+
+Minimum success before Unity import:
+
+- `job_status` shows `generated`, `adjusted` or `unity_ready`;
+- a mesh artifact exists under the job work directory;
+- `normalization_report.json` is valid when bounds were adjusted;
+- `import_asset_to_unity` writes a Unity manifest and Unity-ready mesh path.
+
+For lower-level TRELLIS2 workflow details, see `workflows/README_TRELLIS2_COMFYUI.md`.
 
 ## Reference Image Tips
 
@@ -91,16 +103,20 @@ Do not write final dimensions into the image. Dimensions are enforced after gene
 
 Use `adjust_generated_asset` when the asset is too large, too small, rotated incorrectly or has the wrong pivot.
 
+Normalization preserves proportions. Target bounds are treated as a maximum envelope, never as a stretch target for X/Y/Z. The fit axis comes from the asset profile unless you override it: `terrain_piece`, `prop`, `pickup` and `equipment` use `contain`, `wall` and `weapon` use `x`, and `door` and `character` use `y`. `window_wall` and `wall_mirror` are wall sub-profiles with their own fit axis and bounds. Non-uniform XYZ scale is rejected because it deforms generated meshes.
+
 Example wall bounds:
 
 ```text
 targetBounds = 4,2,0.35
+fitAxis = x
 pivot = bottom-center
 axisRemap = x,y,z
 rotateEuler = 0,0,0
+scale = 1
 ```
 
-Read `normalization_report.json` to verify before/after bounds.
+Read `normalization_report.json` to verify before/after bounds, `fitMode`, `fitAxis` and `proportionsPreserved`.
 
 ## Unity Import
 

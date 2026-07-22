@@ -1,8 +1,8 @@
 # Security Policy / Politique securite
 
-This is a prototype maintained by a single developer. There is no formal security SLA. The installer and plugin can run local commands, clone repositories, install packages and interact with Unity. Review commands before running anything outside dry-run mode.
+This is a solo-maintained experimental prototype, not broadly tested across machines, with no guarantee of any kind and no formal security SLA. The installer and plugin can run local commands, clone repositories, install packages and interact with Unity. Review commands before running anything outside dry-run mode.
 
-Ce projet est un prototype maintenu par un seul developpeur. Il n'y a pas de SLA securite formel. L'installeur et le plugin peuvent executer des commandes locales, cloner des repos, installer des packages et interagir avec Unity. Relisez les commandes avant de lancer autre chose qu'un dry-run.
+Ce projet est un prototype experimental maintenu par un seul developpeur, globalement non teste, sans aucune garantie et sans SLA securite formel. L'installeur et le plugin peuvent executer des commandes locales, cloner des repos, installer des packages et interagir avec Unity. Relisez les commandes avant de lancer autre chose qu'un dry-run.
 
 ## Reporting
 

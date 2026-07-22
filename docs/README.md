@@ -24,7 +24,10 @@ Cette documentation est fournie en francais et en anglais.
 
 ## Shared / Commun
 
+- `ROADMAP.md`
 - `PUBLICATION_CHECKLIST.md`
+- `PUBLIC_READINESS_AUDIT.md`
+- `../workflows/README_TRELLIS2_COMFYUI.md`
 - `../CONTRIBUTING.md`
 - `../SUPPORT.md`
 - `../SECURITY.md`

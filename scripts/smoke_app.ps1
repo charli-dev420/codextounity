@@ -82,7 +82,7 @@ Add-Check 'plan_reference_image' 'ok'
 $box = Join-Path $WorkDir 'smoke_box.glb'
 $adjusted = Join-Path $WorkDir 'smoke_box_adjusted.glb'
 $normalizationReport = Join-Path $WorkDir 'normalization_report.json'
-python (Join-Path $PluginRoot 'scripts\create_test_glb.py') --out $box | Out-Null
+python -B (Join-Path $PluginRoot 'scripts\create_test_glb.py') --out $box | Out-Null
 $adjust = Invoke-McpJsonLines $server @(
   @{jsonrpc='2.0';id=10;method='tools/call';params=@{name='adjust_generated_asset';arguments=@{inputMesh=$box;outputMesh=$adjusted;targetBounds='4,2,0.35';pivot='bottom-center';axisRemap='x,y,z';customPivot='0,0,0';tolerance=0.002;report=$normalizationReport}}}
 )

@@ -54,6 +54,61 @@
     "y": 2.0,
     "z": 0.35
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "x"
+  },
+  "subProfiles": {
+    "window_wall": {
+      "displayName": "Window Wall",
+      "role": "window wall panel",
+      "aliases": [
+        "window",
+        "window_wall",
+        "fenetre",
+        "mur fenetre"
+      ],
+      "targetBounds": {
+        "x": 4.0,
+        "y": 2.0,
+        "z": 0.35
+      },
+      "unityCategory": "environment/wall",
+      "normalizationDefaults": {
+        "fitMode": "preserve-aspect",
+        "targetBoundsMode": "max-envelope",
+        "allowNonUniformScale": false,
+        "scale": 1,
+        "fitAxis": "x"
+      }
+    },
+    "wall_mirror": {
+      "displayName": "Wall Mirror",
+      "role": "wall mirror decor",
+      "aliases": [
+        "mirror",
+        "wall_mirror",
+        "miroir",
+        "miroir mural"
+      ],
+      "targetBounds": {
+        "x": 0.75,
+        "y": 1.2,
+        "z": 0.12
+      },
+      "unityCategory": "environment/wall-mounted-decor",
+      "normalizationDefaults": {
+        "fitMode": "preserve-aspect",
+        "targetBoundsMode": "max-envelope",
+        "allowNonUniformScale": false,
+        "scale": 1,
+        "fitAxis": "y"
+      }
+    }
+  },
   "faceBudget": 12000,
   "aliases": [
     "wall",

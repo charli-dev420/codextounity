@@ -49,6 +49,13 @@
     "y": 0.8,
     "z": 0.4
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "contain"
+  },
   "faceBudget": 9000,
   "aliases": [
     "equipment",

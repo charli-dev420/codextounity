@@ -49,6 +49,13 @@
     "y": 2.1,
     "z": 0.18
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "y"
+  },
   "faceBudget": 10000,
   "aliases": [
     "door",

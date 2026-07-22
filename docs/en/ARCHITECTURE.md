@@ -2,7 +2,7 @@
 
 ## Goal
 
-Codex Unity ComfyUI Pipeline is a local prototype. It coordinates a 3D asset pipeline for Unity without making ComfyUI or Unity the decision layer.
+Codex Unity ComfyUI Pipeline is a local experimental prototype, not broadly tested across machines. It coordinates a 3D asset pipeline for Unity without making ComfyUI or Unity the decision layer.
 
 The intended flow is:
 
@@ -81,7 +81,8 @@ These files are useful for resuming or diagnosing a job, but they must not be pu
 
 ## Known Limits
 
-- This project is a prototype.
+- This project is an experimental prototype and is not broadly tested.
+- No guarantee is provided.
 - Installers are not guaranteed on every machine.
 - GPU generation depends heavily on CUDA, PyTorch, drivers, ComfyUI nodes and model versions.
 - `-SkipUnityBatch` does not prove a full Unity batch import.

@@ -4,7 +4,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 
-$excludeDirs = @('.git', 'node_modules', '.venv', 'venv', '__pycache__')
+$excludeDirs = @(
+  '.git', '.codex', 'node_modules', '.venv', 'venv', 'env', '__pycache__',
+  'bin', 'obj', 'dist', 'build', 'Library', 'Temp', 'Logs', 'UserSettings'
+)
 $textExtensions = @(
   '.md','.txt','.json','.jsonl','.js','.mjs','.cjs','.ts','.tsx','.html','.css',
   '.ps1','.psm1','.sh','.py','.cs','.yaml','.yml','.xml','.toml','.ini','.cfg'
@@ -38,6 +41,17 @@ function Test-SkipGeneratedArtifact([string]$Path) {
   }
   return $false
 }
+function ConvertTo-RelativePath([string]$BasePath, [string]$ChildPath) {
+  $baseFull = [System.IO.Path]::GetFullPath($BasePath).TrimEnd('\','/') + [System.IO.Path]::DirectorySeparatorChar
+  $childFull = [System.IO.Path]::GetFullPath($ChildPath)
+  try {
+    return [System.IO.Path]::GetRelativePath($baseFull, $childFull)
+  } catch {
+    $baseUri = [System.Uri]::new($baseFull)
+    $childUri = [System.Uri]::new($childFull)
+    return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($childUri).ToString()).Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+  }
+}
 
 $findings = New-Object System.Collections.Generic.List[object]
 $files = Get-ChildItem -LiteralPath $Root -Recurse -Force -File -ErrorAction SilentlyContinue | Where-Object {
@@ -53,7 +67,7 @@ foreach ($file in $files) {
       foreach ($match in $matches) {
         $value = $match.Value
         if ($value -match '<[A-Z_]+>') { continue }
-        $relative = [System.IO.Path]::GetRelativePath($Root, $file.FullName)
+        $relative = ConvertTo-RelativePath $Root $file.FullName
         $findings.Add([ordered]@{
           file = $relative.Replace('\','/')
           line = $lineIndex + 1
@@ -69,7 +83,7 @@ $findingArray = @($findings.ToArray())
 $cacheFindings = @()
 Get-ChildItem -LiteralPath $Root -Recurse -Force -Directory -Filter '__pycache__' -ErrorAction SilentlyContinue | Where-Object { -not (Test-SkipGeneratedArtifact $_.FullName) } | ForEach-Object {
   $cacheFindings += [ordered]@{
-    file = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace('\','/')
+    file = (ConvertTo-RelativePath $Root $_.FullName).Replace('\','/')
     line = 0
     type = 'generated_python_cache'
     sample = '__pycache__'
@@ -77,7 +91,7 @@ Get-ChildItem -LiteralPath $Root -Recurse -Force -Directory -Filter '__pycache__
 }
 Get-ChildItem -LiteralPath $Root -Recurse -Force -File -ErrorAction SilentlyContinue | Where-Object { $_.Extension -in @('.pyc', '.pyo') -and -not (Test-SkipGeneratedArtifact $_.FullName) } | ForEach-Object {
   $cacheFindings += [ordered]@{
-    file = [System.IO.Path]::GetRelativePath($Root, $_.FullName).Replace('\','/')
+    file = (ConvertTo-RelativePath $Root $_.FullName).Replace('\','/')
     line = 0
     type = 'generated_python_bytecode'
     sample = $_.Name

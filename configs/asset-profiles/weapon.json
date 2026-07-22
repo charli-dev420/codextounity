@@ -51,6 +51,13 @@
     "y": 0.25,
     "z": 0.18
   },
+  "normalizationDefaults": {
+    "fitMode": "preserve-aspect",
+    "targetBoundsMode": "max-envelope",
+    "allowNonUniformScale": false,
+    "scale": 1,
+    "fitAxis": "x"
+  },
   "faceBudget": 8000,
   "aliases": [
     "weapon",
